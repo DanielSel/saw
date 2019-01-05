@@ -1,0 +1,8 @@
+exec {
+	wait = yes
+	program = "/usr/bin/node /etc/saw/radius_exec_auth.js"
+	input_pairs = request
+	shell_escape = no
+	timeout = 10
+	output = none
+}

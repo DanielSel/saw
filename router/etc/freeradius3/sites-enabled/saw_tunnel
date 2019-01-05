@@ -1,0 +1,33 @@
+server saw_tunnel {
+
+	listen {
+		ipaddr = 127.0.0.1
+		port = 18120
+		type = auth
+	}
+
+
+	authorize {
+
+#		filter_username
+#		filter_inner_identity
+
+		update control {
+			Auth-Type := SAW
+		}
+
+
+		update control {
+			&Proxy-To-Realm := LOCAL
+		}
+
+	}
+
+
+	authenticate {
+		Auth-Type SAW {
+			exec
+		}
+	}
+
+} 

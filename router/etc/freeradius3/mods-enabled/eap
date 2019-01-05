@@ -1,0 +1,20 @@
+eap {
+	default_eap_type = ttls
+
+	tls-config tls-common {
+		private_key_password = whatever
+		private_key_file = /etc/saw/saw_eap.pem
+		certificate_file = /etc/saw/saw_eap.pem
+		ca_file = /etc/saw/saw_ca.crt
+		
+       	ecdh_curve = secp256k1
+    	cipher_list = "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA256:ECDHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS;"
+	}
+
+	ttls {
+		tls = tls-common
+		default_eap_type = pap
+		require_client_cert = no
+		virtual_server = "saw_tunnel"
+	}
+}

@@ -1,0 +1,57 @@
+server saw {
+
+	namespace = radius
+
+	listen {
+		type = auth
+
+		ipaddr = 127.0.0.1
+		port = 1812
+	}
+
+	listen {
+		type = acct
+
+		ipaddr = 127.0.0.1
+		port = 1813
+	}
+
+	clients {
+
+		client localhost {
+			shortname = localhost
+			ipaddr = 127.0.0.1
+			secret = testing123
+			require_message_authenticator = no
+			nas_type = other
+		}
+	}
+
+	authorize {
+
+#		preprocess
+#		auth_log
+		eap {
+			ok = return
+		}
+	
+		update control {
+        		Auth-Type := SAW
+		}
+
+#		expiration
+#		logintime
+	}
+
+	authenticate {
+		
+		Auth-Type EAP {
+			eap
+		}
+
+		Auth-Type SAW {
+			exec
+		}
+	}
+
+}
