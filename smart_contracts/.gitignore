@@ -1,0 +1,5 @@
+build/
+migrations/
+contracts/
+truffle.js
+package-lock.json
