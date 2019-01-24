@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package saw;
+
+service SawService {
+    rpc authUser(UserAuthRequest) returns (UserAuthResponse);
+    rpc submitPop(stream Pop) returns (PopStatus);
+}
+
+message UserAuthRequest {
+    string user = 1;
+    string password = 2;
+}
+
+message UserAuthResponse {
+    bool authenticated = 1;
+    string msg = 2;
+}
+
+message Pop {
+
+}
+
+message PopStatus {
+    enum Status {
+        OK = 0;
+        EMPTY_ACCOUNT = 1;
+        POLICY_REJECT = 2;
+        POP_TIMEOUT = 3;
+        POP_INVALID = 4;
+        CONNECTION_ERROR = 5;
+        NO_CLUE_WHATS_WRONG = 6
+    }
+    Status state = 1;
+    string msg = 2;
+}
