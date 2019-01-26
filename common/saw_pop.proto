@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package saw;
+
+service SawPop {
+    rpc submitPop(stream Pop) returns (PopStatus);
+}
+
+
+message Pop {
+    string msg = 1;
+}
+
+message PopStatus {
+    Status state = 1;
+    string msg = 2;
+}
+
+enum Status {
+    OK = 0;
+    POP_TIMEOUT = 1;
+    POP_INVALID = 2;
+    CONNECTION_ERROR = 3;
+    NO_CLUE_WHATS_WRONG = 4;
+}
