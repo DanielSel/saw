@@ -3,13 +3,37 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
+    "compounds": [
+        {
+            "name": "service_auth_client",
+            "configurations": ["saw_service", "auth_client"]
+        },
+        {
+            "name": "service_pop_client",
+            "configurations": ["saw_service", "pop_client"]
+        }
+    ],
     "configurations": [
         {
+            "name": "saw_service",
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
             "program": "${workspaceFolder}/router\\etc\\saw\\saw_service\\saw_service.js",
             "cwd": "${workspaceFolder}/router\\etc\\saw\\saw_service"
+        },
+        {
+            "name": "auth_client",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/utils\\auth_client.js",
+            "cwd": "${workspaceFolder}/utils"
+        },
+        {
+            "name": "pop_client",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/utils\\pop_client.js",
+            "cwd": "${workspaceFolder}/utils"
         }
     ]
 }

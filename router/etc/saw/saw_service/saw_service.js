@@ -51,15 +51,15 @@ function authUser(call, callback) {
     let authResponse = new auth_messages.UserAuthResponse();
 
     // Process Auth Request
-    let user = call.request.user;
-    let pw = call.request.password;
+    let user = call.request.getUser();
+    let pw = call.request.getPassword();
     console.log(`Received Auth request from User "${user}" with password "${pw}"`);
 
     // Check Blacklist
     if (false) { // TODO
-        authResponse.authenticated = false;
-        authResponse.state = auth_messages.Status.BLACKLISTED;
-        authResponse.msg = "You my friend know exactly why you are being rejected..."
+        authResponse.setAuthenticated(false);
+        authResponse.setState(auth_messages.Status.BLACKLISTED);
+        authResponse.setMsg("You my friend know exactly why you are being rejected...");
         callback(null, authResponse);
         return;
     }
@@ -67,25 +67,25 @@ function authUser(call, callback) {
     // Check Balance
     let balance = getBalance();
     if (balance == 0) {
-        authResponse.authenticated = false;
-        authResponse.state = auth_messages.Status.EMPTY_ACCOUNT;
-        authResponse.msg = "If you have no money, how are you gonna pay?"
+        authResponse.setAuthenticated();
+        authResponse.setState(auth_messages.Status.EMPTY_ACCOUNT);
+        authResponse.setMsg("If you have no money, how are you gonna pay?");
         callback(null, authResponse);
         return;
     }
 
     if (balance < MIN_INITIAL_FUNDS) {
-        authResponse.authenticated = false;
-        authResponse.state = auth_messages.Status.POLICY_REJECT;
-        authResponse.msg = "You are too poor, I don't want to risk it :("
+        authResponse.setAuthenticated(false); 
+        authResponse.setState(auth_messages.Status.POLICY_REJECT);
+        authResponse.setMsg("You are too poor, I don't want to risk it :(");
         callback(null, authResponse);
         return;
     }
 
     // If you made it here, you are good to go...
-    authResponse.authenticated = true;
-    authResponse.state = auth_messages.Status.OK;
-    authResponse.msg = "All good, darling :)"
+    authResponse.setAuthenticated(true)
+    authResponse.setState(auth_messages.Status.OK)
+    authResponse.setMsg("All good, darling :)");
     callback(null, authResponse);
 }
 
@@ -97,7 +97,7 @@ function submitPop(call, callback) {
     let timer = setTimeout(timeout, MAX_POP_INTERVAL * 1000);
 
     call.on('data', function(pop) {
-        console.log(" %s: Received Valid Pop", sessionName)
+        console.log(" %s: Received Valid Pop, msg: %s", sessionName, pop.getMsg());
         pops.push(pop);
 
         clearTimeout(timer);
@@ -109,8 +109,8 @@ function submitPop(call, callback) {
         clearTimeout(timer);
 
         let status = new pop_messages.PopStatus();
-        status.state = pop_messages.Status.OK;
-        status.msg = "All good :)";
+        status.setState(pop_messages.Status.OK);
+        status.setMsg("All good :)");
         callback(null, status);   
     });
 
@@ -119,8 +119,8 @@ function submitPop(call, callback) {
         clearTimeout(timer);
 
         let status = new pop_messages.PopStatus();
-        status.state = pop_messages.Status.POP_TIMEOUT;
-        status.msg = "You moron didn't send me a POP in time, beat it!";
+        status.setState(pop_messages.Status.POP_TIMEOUT);
+        status.setMsg("You moron didn't send me a POP in time, beat it!");
         callback(null, status);   
     }
 }
