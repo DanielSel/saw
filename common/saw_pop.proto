@@ -3,23 +3,35 @@ syntax = "proto3";
 package saw;
 
 service SawPop {
+    rpc getSessionId (SessionIdRequest) returns (SessionIdResponse);
     rpc submitPop(stream Pop) returns (PopStatus);
 }
 
 
 message Pop {
-    string msg = 1;
+    fixed64 sessionHash = 1;
+    uint32 acc_time = 2;
+    string signature = 3;
 }
 
 message PopStatus {
-    Status state = 1;
+    PopStatusCode state = 1;
     string msg = 2;
 }
 
-enum Status {
-    OK = 0;
+message SessionIdRequest {
+    bytes eth_address = 1;
+    string signature = 2;
+}
+
+message SessionIdResponse {
+    fixed64 sessionHash = 1;
+}
+
+enum PopStatusCode {
+    POP_OK = 0;
     POP_TIMEOUT = 1;
     POP_INVALID = 2;
-    CONNECTION_ERROR = 3;
-    NO_CLUE_WHATS_WRONG = 4;
+    POP_CONNECTION_ERROR = 3;
+    POP_NO_CLUE_WHATS_WRONG = 4;
 }

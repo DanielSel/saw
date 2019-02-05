@@ -13,15 +13,15 @@ message UserAuthRequest {
 
 message UserAuthResponse {
     bool authenticated = 1;
-    Status state = 2;
+    AuthStatusCode state = 2;
     string msg = 3;
 }
 
-enum Status {
-    OK = 0;
+enum AuthStatusCode {
+    AUTH_OK = 0;
     EMPTY_ACCOUNT = 1;
     POLICY_REJECT = 2;
     BLACKLISTED = 3;
-    CONNECTION_ERROR = 4;
-    NO_CLUE_WHATS_WRONG = 5;
+    AUTH_CONNECTION_ERROR = 4;
+    AUTH_NO_CLUE_WHATS_WRONG = 5;
 }

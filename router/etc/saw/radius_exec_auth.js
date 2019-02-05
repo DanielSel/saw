@@ -7,7 +7,8 @@
 // Password: Expected Signature for the UserName (to prove that user in fact is owner of the account)
 const user = process.env["User-Name"];
 const pw = process.env["User-Password"];
+const mac = process.env["Calling-Station-ID"];
 
 
-console.log(`Authorized User "${user}" with password "${pw}"`);
+console.log(`Authorized User "${user}" with password "${pw}" and MAC address: "${mac}"`);
 return 0;

@@ -1,0 +1,22 @@
+{
+  "name": "@saw/service",
+  "version": "0.1.0",
+  "description": "SAW (Smart Autonomous Wifi) Service for handling Authentication and Payment Collection",
+  "main": "saw_service.js",
+  "dependencies": {
+    "ethers": "^4.0.23",
+    "grpc": "^1.18.0",
+    "google-protobuf": "^3.6.1",
+    "shelljs": "^0.8.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DanielSel/saw/tree/master/router/etc/saw/saw_service"
+  },
+  "author": "Daniel Sel",
+  "license": "ISC"
+}

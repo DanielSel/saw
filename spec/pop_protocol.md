@@ -8,13 +8,15 @@
 
 
 ## pop Datastructure
+```
 struct pop {
-    seq_nr: uint
-    timestamp: uint
+    session_id: uint
+    acc_time: uint // Accumulated time
     ap_pubkey: pubkey // do we need this?
     mac_address: bytes // do we need this?  --> + security - cannot use same wallet for multiple devices
     signature: [v, r, s] // research
 }
+```
 
 ## Properties
 * Small packets, low bandwitdth requirement

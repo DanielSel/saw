@@ -1,0 +1,21 @@
+{
+  "name": "@saw/utils",
+  "version": "0.1.0",
+  "description": "Utilities for Developmemnt and Testing of SAW (Smart Autonomous Wifi)",
+  "main": "saw_service_test.js",
+  "dependencies": {
+    "ethers": "^4.0.23",
+    "grpc": "^1.18.0",
+    "google-protobuf": "^3.6.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DanielSel/saw/tree/master/utils"
+  },
+  "author": "Daniel Sel",
+  "license": "ISC"
+}
