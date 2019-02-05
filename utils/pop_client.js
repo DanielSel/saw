@@ -1,3 +1,4 @@
+const ethers = require('ethers');
 require('google-protobuf');
 const grpc = require('grpc');
 const messages = require('./generated/saw_pop_pb');
@@ -5,6 +6,19 @@ const services = require('./generated/saw_pop_grpc_pb');
 
 let client = new services.SawPopClient('localhost:6666', grpc.credentials.createInsecure());
 let timer;
+let sessionId;
+
+async function getSessionId() {
+    if(!sessionId) {
+        let request = messages.SessionIdRequest();
+        request.SawPopClient = 3;
+
+        let asdf;
+        
+        sessionId = await client.getSessionId()
+    }
+}
+function createPop()
 
 function sendPopsDelayed(ttl, minDelay, maxDelay, call) {
     clearTimeout(timer);

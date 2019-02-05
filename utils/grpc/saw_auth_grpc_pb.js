@@ -2,28 +2,28 @@
 
 'use strict';
 var grpc = require('grpc');
-var common_saw_auth_pb = require('../common/saw_auth_pb.js');
+var saw_auth_pb = require('./saw_auth_pb.js');
 
 function serialize_saw_UserAuthRequest(arg) {
-  if (!(arg instanceof common_saw_auth_pb.UserAuthRequest)) {
+  if (!(arg instanceof saw_auth_pb.UserAuthRequest)) {
     throw new Error('Expected argument of type saw.UserAuthRequest');
   }
   return new Buffer(arg.serializeBinary());
 }
 
 function deserialize_saw_UserAuthRequest(buffer_arg) {
-  return common_saw_auth_pb.UserAuthRequest.deserializeBinary(new Uint8Array(buffer_arg));
+  return saw_auth_pb.UserAuthRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_saw_UserAuthResponse(arg) {
-  if (!(arg instanceof common_saw_auth_pb.UserAuthResponse)) {
+  if (!(arg instanceof saw_auth_pb.UserAuthResponse)) {
     throw new Error('Expected argument of type saw.UserAuthResponse');
   }
   return new Buffer(arg.serializeBinary());
 }
 
 function deserialize_saw_UserAuthResponse(buffer_arg) {
-  return common_saw_auth_pb.UserAuthResponse.deserializeBinary(new Uint8Array(buffer_arg));
+  return saw_auth_pb.UserAuthResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 
@@ -32,8 +32,8 @@ var SawAuthService = exports.SawAuthService = {
     path: '/saw.SawAuth/authUser',
     requestStream: false,
     responseStream: false,
-    requestType: common_saw_auth_pb.UserAuthRequest,
-    responseType: common_saw_auth_pb.UserAuthResponse,
+    requestType: saw_auth_pb.UserAuthRequest,
+    responseType: saw_auth_pb.UserAuthResponse,
     requestSerialize: serialize_saw_UserAuthRequest,
     requestDeserialize: deserialize_saw_UserAuthRequest,
     responseSerialize: serialize_saw_UserAuthResponse,

@@ -11,7 +11,7 @@ var jspb = require('google-protobuf');
 var goog = jspb;
 var global = Function('return this')();
 
-goog.exportSymbol('proto.saw.Status', null, global);
+goog.exportSymbol('proto.saw.AuthStatusCode', null, global);
 goog.exportSymbol('proto.saw.UserAuthRequest', null, global);
 goog.exportSymbol('proto.saw.UserAuthResponse', null, global);
 
@@ -274,7 +274,7 @@ proto.saw.UserAuthResponse.deserializeBinaryFromReader = function(msg, reader) {
       msg.setAuthenticated(value);
       break;
     case 2:
-      var value = /** @type {!proto.saw.Status} */ (reader.readEnum());
+      var value = /** @type {!proto.saw.AuthStatusCode} */ (reader.readEnum());
       msg.setState(value);
       break;
     case 3:
@@ -352,15 +352,15 @@ proto.saw.UserAuthResponse.prototype.setAuthenticated = function(value) {
 
 
 /**
- * optional Status state = 2;
- * @return {!proto.saw.Status}
+ * optional AuthStatusCode state = 2;
+ * @return {!proto.saw.AuthStatusCode}
  */
 proto.saw.UserAuthResponse.prototype.getState = function() {
-  return /** @type {!proto.saw.Status} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+  return /** @type {!proto.saw.AuthStatusCode} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
-/** @param {!proto.saw.Status} value */
+/** @param {!proto.saw.AuthStatusCode} value */
 proto.saw.UserAuthResponse.prototype.setState = function(value) {
   jspb.Message.setProto3EnumField(this, 2, value);
 };
@@ -384,13 +384,13 @@ proto.saw.UserAuthResponse.prototype.setMsg = function(value) {
 /**
  * @enum {number}
  */
-proto.saw.Status = {
-  OK: 0,
+proto.saw.AuthStatusCode = {
+  AUTH_OK: 0,
   EMPTY_ACCOUNT: 1,
   POLICY_REJECT: 2,
   BLACKLISTED: 3,
-  CONNECTION_ERROR: 4,
-  NO_CLUE_WHATS_WRONG: 5
+  AUTH_CONNECTION_ERROR: 4,
+  AUTH_NO_CLUE_WHATS_WRONG: 5
 };
 
 goog.object.extend(exports, proto.saw);
