@@ -50,8 +50,8 @@ function deserialize_saw_SessionIdResponse(buffer_arg) {
 
 
 var SawPopService = exports.SawPopService = {
-  getSessionId: {
-    path: '/saw.SawPop/getSessionId',
+  newSession: {
+    path: '/saw.SawPop/newSession',
     requestStream: false,
     responseStream: false,
     requestType: saw_pop_pb.SessionIdRequest,

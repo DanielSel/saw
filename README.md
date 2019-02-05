@@ -10,6 +10,7 @@ TODO
 
 ### General
 * Implement for IoT platforms
+* Possibility to continue Sessions (instead of requesting new session on every connect)
 
 ### SAW Router
 * Implement Authentication as native FreeRADIUS module (instead of using exec module)

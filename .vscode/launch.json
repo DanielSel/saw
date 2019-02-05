@@ -25,15 +25,24 @@
             "name": "auth_client",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/utils\\auth_client.js",
+            "program": "${workspaceFolder}/utils\\auth_client.ts",
             "cwd": "${workspaceFolder}/utils"
         },
         {
             "name": "pop_client",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/utils\\pop_client.js",
-            "cwd": "${workspaceFolder}/utils"
+            "program": "${workspaceFolder}\\utils\\pop_client.js",
+            "cwd": "${workspaceFolder}/utils",
+            "outFiles": ["${workspaceFolder}/utils/build/**/*.js"]
+        },
+        {
+            "name": "saw_client",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}\\utils\\saw_client.ts",
+            "cwd": "${workspaceFolder}/utils",
+            "outFiles": ["${workspaceFolder}/utils/build/**/*.js"]
         }
     ]
 }

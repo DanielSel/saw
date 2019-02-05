@@ -5,10 +5,15 @@
   "main": "saw_service_test.js",
   "dependencies": {
     "ethers": "^4.0.23",
-    "grpc": "^1.18.0",
-    "google-protobuf": "^3.6.1"
+    "google-protobuf": "^3.6.1",
+    "grpc": "^1.18.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/google-protobuf": "^3.2.7",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.1",
+    "typescript-tslint-plugin": "^0.3.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

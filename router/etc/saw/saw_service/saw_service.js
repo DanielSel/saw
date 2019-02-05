@@ -97,13 +97,11 @@ async function authUser(call, callback) {
     callback(null, authResponse);
 }
 
-const Long = require('long');
-function getSessionId(call, callback) {
-    let randomNr = Long.fromNumber(Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER - Number.MIN_SAFE_INTEGER + 1)) + Number.MIN_SAFE_INTEGER, false).toUnsigned(); 
-    let response = new pop_messages.SessionId();
+function newSession(call, callback) {
+    let randomNr = Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER - 1)); 
+    let response = new pop_messages.SessionIdResponse();
     response.setSessionhash(randomNr);
     console.log(randomNr);
-    console.log(randomNr.toString());
     callback(null, response);
 }
 
@@ -150,7 +148,7 @@ function submitPop(call, callback) {
 function startSawServices() {
     let popServer = new grpc.Server();
     let authServer = new grpc.Server();
-    popServer.addService(pop_services.SawPopService, {getSessionId: getSessionId, submitPop: submitPop})
+    popServer.addService(pop_services.SawPopService, {newSession: newSession, submitPop: submitPop})
     authServer.addService(auth_services.SawAuthService, {authUser: authUser})
     popServer.bind('0.0.0.0:6666', grpc.ServerCredentials.createInsecure());
     authServer.bind('127.0.0.1:6667', grpc.ServerCredentials.createInsecure());

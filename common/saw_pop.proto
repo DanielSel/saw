@@ -3,7 +3,7 @@ syntax = "proto3";
 package saw;
 
 service SawPop {
-    rpc getSessionId (SessionIdRequest) returns (SessionIdResponse);
+    rpc newSession (SessionIdRequest) returns (SessionIdResponse);
     rpc submitPop(stream Pop) returns (PopStatus);
 }
 
