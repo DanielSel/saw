@@ -14,15 +14,14 @@
             "name": "saw_service",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/router\\etc\\saw\\saw_service\\saw_service.js",
-            "cwd": "${workspaceFolder}/router\\etc\\saw\\saw_service"
+            "program": "${workspaceFolder}/router/src/saw_service.ts",
+            "outFiles": ["${workspaceFolder}/router/deploy/etc/saw/service/**/*.js"]
         },
         {
             "name": "sim_simpleTest",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}\\utils\\simulations.ts",
-            "cwd": "${workspaceFolder}/utils",
             "outFiles": ["${workspaceFolder}/utils/build/**/*.js"]
         }
     ]
