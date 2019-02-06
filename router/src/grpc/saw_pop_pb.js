@@ -428,7 +428,7 @@ proto.saw.SessionIdRequest.prototype.toObject = function(opt_includeInstance) {
  */
 proto.saw.SessionIdRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    ethAddress: msg.getEthAddress_asB64(),
+    ethAddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
     signature: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
@@ -467,7 +467,7 @@ proto.saw.SessionIdRequest.deserializeBinaryFromReader = function(msg, reader) {
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      var value = /** @type {string} */ (reader.readString());
       msg.setEthAddress(value);
       break;
     case 2:
@@ -503,9 +503,9 @@ proto.saw.SessionIdRequest.prototype.serializeBinary = function() {
  */
 proto.saw.SessionIdRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getEthAddress_asU8();
+  f = message.getEthAddress();
   if (f.length > 0) {
-    writer.writeBytes(
+    writer.writeString(
       1,
       f
     );
@@ -521,41 +521,17 @@ proto.saw.SessionIdRequest.serializeBinaryToWriter = function(message, writer) {
 
 
 /**
- * optional bytes eth_address = 1;
- * @return {!(string|Uint8Array)}
- */
-proto.saw.SessionIdRequest.prototype.getEthAddress = function() {
-  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
-};
-
-
-/**
- * optional bytes eth_address = 1;
- * This is a type-conversion wrapper around `getEthAddress()`
+ * optional string eth_address = 1;
  * @return {string}
  */
-proto.saw.SessionIdRequest.prototype.getEthAddress_asB64 = function() {
-  return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getEthAddress()));
+proto.saw.SessionIdRequest.prototype.getEthAddress = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
-/**
- * optional bytes eth_address = 1;
- * Note that Uint8Array is not supported on all browsers.
- * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getEthAddress()`
- * @return {!Uint8Array}
- */
-proto.saw.SessionIdRequest.prototype.getEthAddress_asU8 = function() {
-  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getEthAddress()));
-};
-
-
-/** @param {!(string|Uint8Array)} value */
+/** @param {string} value */
 proto.saw.SessionIdRequest.prototype.setEthAddress = function(value) {
-  jspb.Message.setProto3BytesField(this, 1, value);
+  jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -621,7 +597,8 @@ proto.saw.SessionIdResponse.prototype.toObject = function(opt_includeInstance) {
  */
 proto.saw.SessionIdResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    sessionhash: jspb.Message.getFieldWithDefault(msg, 1, 0)
+    sessionhash: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    success: (f = msg.getSuccess()) && proto.saw.PopStatus.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -662,6 +639,11 @@ proto.saw.SessionIdResponse.deserializeBinaryFromReader = function(msg, reader) 
       var value = /** @type {number} */ (reader.readFixed64());
       msg.setSessionhash(value);
       break;
+    case 2:
+      var value = new proto.saw.PopStatus;
+      reader.readMessage(value,proto.saw.PopStatus.deserializeBinaryFromReader);
+      msg.setSuccess(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -698,6 +680,14 @@ proto.saw.SessionIdResponse.serializeBinaryToWriter = function(message, writer) 
       f
     );
   }
+  f = message.getSuccess();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      proto.saw.PopStatus.serializeBinaryToWriter
+    );
+  }
 };
 
 
@@ -713,6 +703,36 @@ proto.saw.SessionIdResponse.prototype.getSessionhash = function() {
 /** @param {number} value */
 proto.saw.SessionIdResponse.prototype.setSessionhash = function(value) {
   jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+/**
+ * optional PopStatus success = 2;
+ * @return {?proto.saw.PopStatus}
+ */
+proto.saw.SessionIdResponse.prototype.getSuccess = function() {
+  return /** @type{?proto.saw.PopStatus} */ (
+    jspb.Message.getWrapperField(this, proto.saw.PopStatus, 2));
+};
+
+
+/** @param {?proto.saw.PopStatus|undefined} value */
+proto.saw.SessionIdResponse.prototype.setSuccess = function(value) {
+  jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+proto.saw.SessionIdResponse.prototype.clearSuccess = function() {
+  this.setSuccess(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.saw.SessionIdResponse.prototype.hasSuccess = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 

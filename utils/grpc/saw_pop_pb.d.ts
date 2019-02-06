@@ -60,10 +60,8 @@ export namespace PopStatus {
 }
 
 export class SessionIdRequest extends jspb.Message { 
-    getEthAddress(): Uint8Array | string;
-    getEthAddress_asU8(): Uint8Array;
-    getEthAddress_asB64(): string;
-    setEthAddress(value: Uint8Array | string): void;
+    getEthAddress(): string;
+    setEthAddress(value: string): void;
 
     getSignature(): string;
     setSignature(value: string): void;
@@ -81,7 +79,7 @@ export class SessionIdRequest extends jspb.Message {
 
 export namespace SessionIdRequest {
     export type AsObject = {
-        ethAddress: Uint8Array | string,
+        ethAddress: string,
         signature: string,
     }
 }
@@ -89,6 +87,12 @@ export namespace SessionIdRequest {
 export class SessionIdResponse extends jspb.Message { 
     getSessionhash(): number;
     setSessionhash(value: number): void;
+
+
+    hasSuccess(): boolean;
+    clearSuccess(): void;
+    getSuccess(): PopStatus | undefined;
+    setSuccess(value?: PopStatus): void;
 
 
     serializeBinary(): Uint8Array;
@@ -104,6 +108,7 @@ export class SessionIdResponse extends jspb.Message {
 export namespace SessionIdResponse {
     export type AsObject = {
         sessionhash: number,
+        success?: PopStatus.AsObject,
     }
 }
 

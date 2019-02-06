@@ -20,12 +20,13 @@ message PopStatus {
 }
 
 message SessionIdRequest {
-    bytes eth_address = 1;
+    string eth_address = 1;
     string signature = 2;
 }
 
 message SessionIdResponse {
     fixed64 sessionHash = 1;
+    PopStatus success = 2;
 }
 
 enum PopStatusCode {

@@ -1,7 +1,7 @@
 import {promisify} from "util";
 
 import {Wallet} from "ethers";
-import {Arrayish, joinSignature, keccak256, SigningKey} from "ethers/utils";
+import {keccak256, recoverAddress, Signature} from "ethers/utils";
 import {sendUnaryData, Server, ServerCredentials, ServerUnaryCall} from "grpc";
 import {exec} from "shelljs";
 
@@ -17,7 +17,6 @@ interface ISession  {
     macAddr: string;
     accTime: number;
     lastPop: number;
-    active: boolean;
     currentTimer: any;
 }
 
@@ -41,22 +40,21 @@ class SawService {
 
     constructor() {
         this.grpcPopService = new Server();
-        this.grpcPopService.addService(SawPopService, {newSession: this.newSession, submitPop: this.submitPop});
+        this.grpcPopService.addService(SawPopService as any, this);
         this.grpcPopService.bind("0.0.0.0:6666", ServerCredentials.createInsecure());
 
         this.sessions = new Map<string, ISession>();
 
         // DEBUG for now
         const testClientEth = "0x9C850041C6F6A7430dF01A6c246f60bDa4313571";
-        this.sessions[testClientEth] = {
+        this.sessions.set(testClientEth, {
             accTime: 0,
-            active: true,
             currentTimer: undefined,
             lastPop: 0,
             macAddr: "00:00:00:00:00:00",
             sessionId: undefined,
-        };
-        this.sessions[testClientEth].currentTimer = setTimeout(this.removeEmptyClientSession,
+        });
+        this.sessions.get(testClientEth)!.currentTimer = setTimeout(this.removeEmptyClientSession.bind(this),
             SawService.MAX_POP_INTERVAL + SawService.POP_TOLERANCE,
             testClientEth);
     }
@@ -79,8 +77,41 @@ class SawService {
         });
 
     }
+
     public newSession(call: ServerUnaryCall<SessionIdRequest>, callback: sendUnaryData<SessionIdResponse>) {
-        tracing.log("DEBUG", "newSession called.");
+        tracing.log("SILLY", "newSession called.");
+        const ethAddr = call.request.getEthAddress();
+        const sig = call.request.getSignature();
+        const response = new SessionIdResponse();
+        const responseStatus = new PopStatus();
+        tracing.log("DEBUG", `Session ID Request received from: ${ethAddr}`);
+
+        if (!this.verifyMessage(ethAddr, sig, ethAddr)) {
+            responseStatus.setState(PopStatusCode.POP_INVALID);
+            responseStatus.setMsg("Invalid Signature on Session ID Request");
+            tracing.log("DEBUG", `Invalid Signature on Session ID Request from: ${ethAddr}`);
+        } else if (!this.sessions.has(ethAddr)) {
+            responseStatus.setState(PopStatusCode.POP_CONNECTION_ERROR);
+            responseStatus.setMsg(`No pre-session for ETH Address: ${ethAddr}. Authenticate using RADIUS first.`);
+            tracing.log("DEBUG", `No pre-session for Session ID Request from: ${ethAddr}`);
+        } else {
+            const session = this.sessions.get(ethAddr)!;
+            clearTimeout(session.currentTimer);
+            const sessionId = Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER - 1));
+            session.sessionId = sessionId;
+            session.accTime = 0;
+            session.lastPop = Date.now();
+            session.currentTimer = setTimeout(this.removeEmptyClientSession.bind(this),
+                SawService.MAX_POP_INTERVAL + SawService.POP_TOLERANCE,
+                ethAddr);
+            tracing.log("INFO", `New Session: ${sessionId} from client: ${ethAddr}`);
+
+            response.setSessionhash(sessionId);
+            responseStatus.setState(PopStatusCode.POP_OK);
+        }
+
+        response.setSuccess(responseStatus);
+        callback(null, response);
     }
 
     public submitPop(call: ServerUnaryCall<Pop>, callback: sendUnaryData<PopStatus> ) {
@@ -90,7 +121,7 @@ class SawService {
     private removeEmptyClientSession(clientEthAddress: string) {
         // tslint:disable-next-line: max-line-length
         tracing.log("INFO", `Removing client with ETH address ${clientEthAddress}. Reason: Empty Session, No POP Received`);
-        const macAddr = this.sessions[clientEthAddress];
+        const macAddr = this.sessions.get(clientEthAddress)!.macAddr;
         this.sessions.delete(clientEthAddress);
         this.disassociateClient(clientEthAddress, macAddr);
     }
@@ -108,6 +139,16 @@ class SawService {
                 // tslint:disable-next-line: max-line-length
                 tracing.log("ERRPR", `Failed to deassociate client with ETH address ${ethAddr} and MAC address ${macAddr}`);
             }
+    }
+
+    private verifyMessage(message: string | ArrayLike<number>, signature: Signature | string, expectedAddress: string)
+            : boolean {
+        try {
+            return recoverAddress(keccak256(message), signature) === expectedAddress;
+        } catch (error) {
+            tracing.log("DEBUG", "Signature Verification Failed: Malformed message", error);
+            return false;
+        }
     }
 }
 
