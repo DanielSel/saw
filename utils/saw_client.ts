@@ -1,7 +1,7 @@
 import {promisify} from "util";
 
 import {Wallet} from "ethers";
-import {Arrayish, joinSignature, keccak256, SigningKey} from "ethers/utils";
+import {hexlify, joinSignature, keccak256, SigningKey} from "ethers/utils";
 import {credentials} from "grpc";
 
 import {SawPopClient} from "./grpc/saw_pop_grpc_pb";
@@ -53,18 +53,25 @@ export class SawClient {
 
     public async popCycle(popInterval?: number, safetyMargin?: number) {
         clearTimeout(this.popTimer);
-        const popStatus = await this.sendPop();
+        let popStatus;
+
+        try {
+            popStatus = await this.sendPop();
+        } catch (error) {
+            tracing.log("ERROR", "Could not send POP", error);
+            return;
+        }
 
         popInterval = popInterval ? popInterval : MAX_POP_INTERVAL;
         safetyMargin = safetyMargin ? safetyMargin : POP_TIME_SAFETY_MARGIN;
 
         if (PopStatusCode.POP_OK === popStatus.getState()) {
-            tracing.log("INFO", `Successfully sent POP at time: ${this.prevPopTime}`);
+            tracing.log("INFO", `Successfully sent POP at time: ${this.prevPopTime}ms`);
             tracing.log("DEBUG", "Resetting Timer...");
-            tracing.log("SILLY", `Next Execution: ${popInterval - safetyMargin}`);
-            tracing.log("SILLY", `popInterval: ${safetyMargin}`);
-            tracing.log("SILLY", `safetyMargin: ${popInterval}`);
-            this.popTimer = setTimeout(this.popCycle,
+            tracing.log("SILLY", `Next Execution: ${this.prevPopTime + popInterval - safetyMargin}ms`);
+            tracing.log("SILLY", `popInterval: ${safetyMargin}ms`);
+            tracing.log("SILLY", `safetyMargin: ${popInterval}ms`);
+            this.popTimer = setTimeout(this.popCycle.bind(this),
                 popInterval - safetyMargin, popInterval, safetyMargin);
             tracing.log("DEBUG", "Timer reset!", this.popTimer);
         } else {
@@ -75,20 +82,21 @@ export class SawClient {
 
     public async sendPop(): Promise<PopStatus> {
         tracing.log("DEBUG", "Preparing to send POP...");
-        const popTime = Math.round(Date.now() / 1000);
         if (!this.prevPopTime) {
-            tracing.log("SILLY", `No Previous POP Time, setting it to current POP Time: ${popTime}`);
-            this.prevPopTime = popTime;
+            this.prevPopTime = Date.now();
+            tracing.log("SILLY", `No Previous POP Time, setting it to current Time: ${this.prevPopTime}`);
         }
-
-        tracing.log("SILLY", `Previous POP Time: ${this.prevPopTime}`);
-        tracing.log("SILLY", `Current POP Time: ${popTime}`);
-        this.accTime += popTime - this.prevPopTime;
-        this.prevPopTime = popTime;
-        tracing.log("DEBUG", `Accumulated Time: ${this.accTime}`);
 
         const sessionId = await this.getSessionId();
         tracing.log("DEBUG", `Session ID: ${sessionId}`);
+
+        const popTime = Date.now();
+        tracing.log("SILLY", `Previous POP Time: ${this.prevPopTime}ms`);
+        tracing.log("SILLY", `Current POP Time: ${popTime}ms`);
+        this.accTime += popTime - this.prevPopTime;
+        this.prevPopTime = popTime;
+        tracing.log("DEBUG", `Accumulated Time: ${this.accTime}ms`);
+
         const pop = this.createPop(sessionId, this.accTime);
         tracing.log("DEBUG", "Sending POP...");
         return await promisify(this.popClient.submitPop).call(this.popClient, pop) as PopStatus;
@@ -101,15 +109,19 @@ export class SawClient {
         pop.setSessionhash(sessionId);
         tracing.log("SILLY", `Accumulated Time: ${accTime}`);
         pop.setAccTime(accTime);
-        const signature = this.signMessage([sessionId, accTime]);
+        const signature = this.signMessage(sessionId + accTime);
         tracing.log("DEBUG", `Signature: ${signature}`);
         pop.setSignature(signature);
         return pop;
     }
 
     // Utility Functions
-    private signMessage(msg: Arrayish): string {
-        const messageHash = keccak256(msg);
+    private signMessage(message: string | number): string {
+        if (typeof(message) === "number"){
+            message = hexlify(message);
+        }
+
+        const messageHash = keccak256(message);
         return joinSignature(this.getSigningKey().signDigest(messageHash));
     }
 
