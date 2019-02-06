@@ -1,7 +1,6 @@
 import {promisify} from "util";
 
 import {Wallet} from "ethers";
-import {InfuraProvider} from "ethers/providers";
 import {Arrayish, joinSignature, keccak256, SigningKey} from "ethers/utils";
 import {credentials} from "grpc";
 
@@ -13,9 +12,8 @@ import {tracing} from "./tracing";
 // SAW Configuration (To be externalized...)
 const MAX_POP_INTERVAL = 10000; // ms
 const POP_TIME_SAFETY_MARGIN = 500; // ms
-tracing.LOG_LEVEL = "SILLY"; // CRITICAL, ERROR, WARNING, INFO, VERBOSE, DEBUG, SILLY
 
-class SawClient {
+export class SawClient {
     private ethWallet: Wallet;
     private popClient: SawPopClient;
     private sessionId!: number;
@@ -124,19 +122,3 @@ class SawClient {
         }
     }
 }
-
-// Test
-async function simpleTest() {
-    const provider = module.exports.provider = new InfuraProvider("ropsten",
-                                        "***REMOVED***");
-    const testMnemonic = "***REMOVED***";
-    const testWallet = Wallet.fromMnemonic(testMnemonic);
-    testWallet.connect(provider);
-
-    const sawClient = new SawClient(testWallet);
-
-    const response = await sawClient.getSessionId();
-    console.log(response);
-}
-
-simpleTest();

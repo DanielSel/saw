@@ -5,12 +5,8 @@
     "version": "0.2.0",
     "compounds": [
         {
-            "name": "service_auth_client",
-            "configurations": ["saw_service", "auth_client"]
-        },
-        {
-            "name": "service_pop_client",
-            "configurations": ["saw_service", "pop_client"]
+            "name": "c_sim_simpleTest",
+            "configurations": ["saw_service", "sim_simpleTest"]
         }
     ],
     "configurations": [
@@ -22,25 +18,10 @@
             "cwd": "${workspaceFolder}/router\\etc\\saw\\saw_service"
         },
         {
-            "name": "auth_client",
+            "name": "sim_simpleTest",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/utils\\auth_client.ts",
-            "cwd": "${workspaceFolder}/utils"
-        },
-        {
-            "name": "pop_client",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}\\utils\\pop_client.js",
-            "cwd": "${workspaceFolder}/utils",
-            "outFiles": ["${workspaceFolder}/utils/build/**/*.js"]
-        },
-        {
-            "name": "saw_client",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}\\utils\\saw_client.ts",
+            "program": "${workspaceFolder}\\utils\\simulations.ts",
             "cwd": "${workspaceFolder}/utils",
             "outFiles": ["${workspaceFolder}/utils/build/**/*.js"]
         }
