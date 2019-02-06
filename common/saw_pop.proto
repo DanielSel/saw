@@ -4,7 +4,7 @@ package saw;
 
 service SawPop {
     rpc newSession (SessionIdRequest) returns (SessionIdResponse);
-    rpc submitPop(stream Pop) returns (PopStatus);
+    rpc submitPop(Pop) returns (PopStatus);
 }
 
 

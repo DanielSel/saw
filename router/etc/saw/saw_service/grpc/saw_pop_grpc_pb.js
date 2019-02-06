@@ -63,7 +63,7 @@ var SawPopService = exports.SawPopService = {
   },
   submitPop: {
     path: '/saw.SawPop/submitPop',
-    requestStream: true,
+    requestStream: false,
     responseStream: false,
     requestType: saw_pop_pb.Pop,
     responseType: saw_pop_pb.PopStatus,
