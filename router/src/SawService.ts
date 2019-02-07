@@ -362,8 +362,3 @@ const sawService = new SawService();
 process.on("SIGINT", sawService.stop.bind(sawService));
 process.on("SIGTERM", sawService.stop.bind(sawService));
 sawService.start();
-
-// NOTES
-// authServer.addService(auth_services.SawAuthService, {authUser: authUser})
-// authServer.bind('127.0.0.1:6667', grpc.ServerCredentials.createInsecure());
-// authServer.start();
