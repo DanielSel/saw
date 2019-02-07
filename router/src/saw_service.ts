@@ -15,7 +15,7 @@ import {Pop, PopStatus, PopStatusCode, SessionIdRequest, SessionIdResponse} from
 
 import {tracing} from "./tracing";
 
-tracing.LOG_LEVEL = "SILLY";
+tracing.LOG_LEVEL = process.env.SAW_LOG_LEVEL ? process.env.SAW_LOG_LEVEL : "INFO";
 
 interface ISession  {
     sessionId: number | undefined;
@@ -39,7 +39,6 @@ class SawService {
     private static MAX_POP_INTERVAL = 10000; // ms
     private static POP_TOLERANCE = 200; // ms
     private static MIN_INITIAL_FUNDS = 10000; // gwei
-    
 
     private grpcPopService: Server;
 
@@ -72,8 +71,8 @@ class SawService {
     }
 
     public start() {
-        this.grpcPopService.start();
         tracing.log("INFO", "Starting SAW POP Service...");
+        this.grpcPopService.start();
     }
 
     public stop() {
@@ -88,7 +87,6 @@ class SawService {
             tracing.log("INFO", "SAW POP Service stopped.");
             clearTimeout(killPopServiceTimer);
         });
-
     }
 
     public newSession(call: ServerUnaryCall<SessionIdRequest>, callback: sendUnaryData<SessionIdResponse>) {
@@ -191,14 +189,16 @@ class SawService {
     }
 
     private removeEmptyClientSession(clientEthAddress: string) {
-        // tslint:disable-next-line: max-line-length
-        tracing.log("INFO", `Removing client with ETH address ${clientEthAddress}. Reason: Empty Session, No POP Received`);
+        tracing.log("SILLY", "removeEmptyClientSession called.");
+        tracing.log("INFO", `Removing client with ETH address ${clientEthAddress}.
+            Reason: Empty Session, No POP Received`);
         const macAddr = this.sessions.get(clientEthAddress)!.macAddr;
         this.sessions.delete(clientEthAddress);
         this.disassociateClient(clientEthAddress, macAddr);
     }
 
     private processFinishedSession(clientEthAddress: string, extraTimeUpdate?: {accTime: number, signature: string}) {
+        tracing.log("SILLY", "processFinishedSession called.");
         const reason = extraTimeUpdate ? "Accumulated Time too low" : "POP Timeout";
         tracing.log("INFO", `Processing session of client with ETH address ${clientEthAddress}. Reason: ${reason}`);
         const session = this.sessions.get(clientEthAddress)!;
@@ -211,19 +211,25 @@ class SawService {
     }
 
     private disassociateClient(ethAddr: string, macAddr: string) {
-        tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
-        return;
+        tracing.log("SILLY", "disassociateClient called.");
+        // Don't try to hostapd_cli when debugging in IDE
+        if (process.env.SAW_DEBUG && process.env.SAW_DEBUG!.includes("VSC")) {
+            tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
+            return;
+        }
+
         if (exec(`hostapd_cli deauthenticate ${macAddr}`).code === 0) {
-                tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
-            } else {
-                // tslint:disable-next-line: max-line-length
-                tracing.log("ERRPR", `Failed to deassociate client with ETH address ${ethAddr} and MAC address ${macAddr}`);
-            }
+            tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
+        } else {
+            // tslint:disable-next-line: max-line-length
+            tracing.log("ERRPR", `Failed to deassociate client with ETH address ${ethAddr} and MAC address ${macAddr}`);
+        }
     }
 
     private recoverSignerAddress(message: string | number, signature: Signature | string)
             : string {
-        if (typeof(message) === "number"){
+        tracing.log("SILLY", "recoverSignerAddress called.");
+        if (typeof(message) === "number") {
             message = hexlify(message);
         }
 
@@ -236,6 +242,7 @@ class SawService {
     }
 
     private flushSessions(inactiveOnly: boolean) {
+        tracing.log("SILLY", "flushSessions called.");
         this.sessions.forEach((session, ethAddr, sessionsMap) => {
             if (!inactiveOnly ||
                 (inactiveOnly && !session.active

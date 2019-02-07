@@ -21,9 +21,12 @@ export class SawClient {
     private popTimer!: any;
     private accTime: number = 0;
 
-    constructor(ethWallet: Wallet, sawHost?: string) {
+    constructor(ethWallet: Wallet, host?: string, port?: string) {
         this.ethWallet = ethWallet;
-        this.popClient = new SawPopClient(sawHost ? sawHost : "localhost" + ":6666", credentials.createInsecure());
+
+        const sawHost: string = host ? host : "localhost";
+        const sawPort: string = port ? port : "6666";
+        this.popClient = new SawPopClient( sawHost + ":" + sawPort, credentials.createInsecure());
     }
 
     public async getSessionId(): Promise<number> {

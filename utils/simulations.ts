@@ -14,13 +14,25 @@
 // 0x9C850041C6F6A7430dF01A6c246f60bDa4313571: 7.675990029973543
 // 0x53D18ce93AB6230079641c703be29FD1D2D24574: 8.367396287970797
 
+import minimist from "minimist";
+
 import {Wallet} from "ethers";
 import {InfuraProvider} from "ethers/providers";
 
 import {SawClient} from "./saw_client";
 import {tracing} from "./tracing";
 
-tracing.LOG_LEVEL = "SILLY"; // CRITICAL, ERROR, WARNING, INFO, VERBOSE, DEBUG, SILLY
+const simulations: any = {};
+
+simulations.happyClient = (sawClient: SawClient) => {
+    tracing.log("INFO", `Starting Simulation "happyClient"...`);
+    sawClient.popCycle();
+};
+
+simulations.all = (sawClient: SawClient) => {
+    tracing.log("INFO", `Starting Simulation "all"...`);
+    simulations.happyClient(sawClient);
+};
 
 // Test
 function simpleTest() {
@@ -37,3 +49,27 @@ function simpleTest() {
 }
 
 simpleTest();
+
+function runSimulation(arg: any) {
+    // Apply default values
+    arg.h = arg.h ? arg.h : "localhost";
+    arg.p = arg.p ? arg.p : "6666";
+    arg.l = arg.l ? arg.l : "INFO";
+    arg.s = arg.s ? arg.s : "all";
+
+    tracing.LOG_LEVEL = arg.l;
+    const testWallet = Wallet.fromMnemonic("***REMOVED***");
+    testWallet.connect(new InfuraProvider("ropsten", "***REMOVED***"));
+    const sawClient = new SawClient(testWallet, arg.h, arg.p);
+    simulations[arg.s](sawClient);
+}
+
+// Execute the Simulation on Startup
+// Usage: -s simulation name
+const argv = minimist(process.argv.slice(2), {alias: {
+    h: "host",
+    p: "port",
+    l: "log-level",
+    s: "simulation",
+}});
+runSimulation(argv);

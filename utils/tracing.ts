@@ -3,11 +3,11 @@ export abstract class tracing {
 
     public static LOG_LEVEL = "INFO";
 
-    public static log(severity: string, message: string, error?: Error) {
+    public static log(severity: string, message: string, details?: any) {
         // Invalid Log Level Configured --> Use INFO
         let level: string = this.LOG_LEVEL;
         if (!(this.logLevels[level])) {
-            console.error("ERROR: Invalid Log Level \'%s\' set. Using default (\'INFO\').", level);
+            console.log("ERROR: Invalid Log Level \'%s\' set. Using default (\'INFO\').", level);
             level = "INFO";
         }
 
@@ -21,9 +21,9 @@ export abstract class tracing {
         if (this.logLevels[level] >= this.logLevels[severity]) {
             console.log("%s: %s", severity, message);
 
-            if (error) {
+            if (details) {
                 console.log("%s: (DETAILS) Object:", severity);
-                console.log(error);
+                console.log(details);
             }
         }
     }

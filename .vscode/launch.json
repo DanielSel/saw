@@ -5,8 +5,12 @@
     "version": "0.2.0",
     "compounds": [
         {
-            "name": "c_sim_simpleTest",
-            "configurations": ["saw_service", "sim_simpleTest"]
+            "name": "sim_all",
+            "configurations": ["saw_service", "client_all"]
+        },
+        {
+            "name": "sim_happy",
+            "configurations": ["saw_service", "client_happy"]
         }
     ],
     "configurations": [
@@ -15,14 +19,27 @@
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/router/src/saw_service.ts",
-            "outFiles": ["${workspaceFolder}/router/deploy/etc/saw/service/**/*.js"]
+            "outFiles": ["${workspaceFolder}/router/deploy/etc/saw/service/**/*.js"],
+            "env": {
+                "SAW_DEBUG": "VSC",
+                "SAW_LOG_LEVEL": "DEBUG"
+            }
         },
         {
-            "name": "sim_simpleTest",
+            "name": "client_all",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}\\utils\\simulations.ts",
-            "outFiles": ["${workspaceFolder}/utils/build/**/*.js"]
+            "outFiles": ["${workspaceFolder}/utils/build/**/*.js"],
+            "args": ["-s", "all", "-l", "DEBUG"]
+        },
+        {
+            "name": "client_happy",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}\\utils\\simulations.ts",
+            "outFiles": ["${workspaceFolder}/utils/build/**/*.js"],
+            "args": ["-s", "happyClient", "-l", "DEBUG"]
         }
     ]
 }
