@@ -18,11 +18,15 @@
             "name": "saw_service",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/router/src/saw_service.ts",
+            "program": "${workspaceFolder}/router/src/SawService.ts",
             "outFiles": ["${workspaceFolder}/router/deploy/etc/saw/service/**/*.js"],
             "env": {
-                "SAW_DEBUG": "VSC",
-                "SAW_LOG_LEVEL": "DEBUG"
+                "SAW_DEBUG":  "${config:dev.saw.service.env.SAW_DEBUG}",
+                "SAW_LOG_LEVEL": "${config:dev.saw.service.env.SAW_LOG_LEVEL}",
+                "SAW_CONTRACT_INFURA_TOKEN": "${config:dev.saw.service.env.SAW_CONTRACT_INFURA_TOKEN}",
+                "SAW_CONTRACT_WALLET_MNEMONIC": "${config:dev.saw.service.env.SAW_CONTRACT_WALLET_MNEMONIC}",
+                "SAW_CONTRACT_JSON_PATH":  "${config:dev.saw.service.env.SAW_CONTRACT_JSON_PATH}",
+                "SAW_CONTRACT_ADDRESS": "${config:dev.saw.service.env.SAW_CONTRACT_ADDRESS}",
             }
         },
         {
@@ -31,7 +35,12 @@
             "request": "launch",
             "program": "${workspaceFolder}\\utils\\simulations.ts",
             "outFiles": ["${workspaceFolder}/utils/build/**/*.js"],
-            "args": ["-s", "all", "-l", "DEBUG"]
+            "args": ["-s", "all", "-l", "DEBUG"],
+            "env": {
+                "SAW_DEBUG":  "${config:dev.saw.client.env.SAW_DEBUG}",
+                "SAW_LOG_LEVEL": "${config:dev.saw.client.env.SAW_LOG_LEVEL}",
+                "SAW_TEST_WALLET_MNEMONIC_1": "${config:dev.saw.client.env.SAW_TEST_WALLET_MNEMONIC_1}",
+            }
         },
         {
             "name": "client_happy",
@@ -39,7 +48,12 @@
             "request": "launch",
             "program": "${workspaceFolder}\\utils\\simulations.ts",
             "outFiles": ["${workspaceFolder}/utils/build/**/*.js"],
-            "args": ["-s", "happyClient", "-l", "DEBUG"]
+            "args": ["-s", "happyClient", "-l", "DEBUG"],
+            "env": {
+                "SAW_DEBUG":  "${config:dev.saw.client.env.SAW_DEBUG}",
+                "SAW_LOG_LEVEL": "${config:dev.saw.client.env.SAW_LOG_LEVEL}",
+                "SAW_TEST_WALLET_MNEMONIC_1": "${config:dev.saw.client.env.SAW_TEST_WALLET_MNEMONIC_1}",
+            }
         }
     ]
 }

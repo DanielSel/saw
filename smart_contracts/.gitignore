@@ -1,5 +1,6 @@
+node_modules/
 build/
-migrations/
-contracts/
-truffle.js
-package-lock.json
+/contracts/
+/migrations/
+/truffle.js
+/package-lock.json

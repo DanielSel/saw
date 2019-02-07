@@ -38,7 +38,7 @@ simulations.all = (sawClient: SawClient) => {
 function simpleTest() {
     const provider = module.exports.provider = new InfuraProvider("ropsten",
                                         "***REMOVED***");
-    const testMnemonic = "***REMOVED***";
+    const testMnemonic = process.env.SAW_TEST_WALLET_MNEMONIC_1!;
     const testWallet = Wallet.fromMnemonic(testMnemonic);
     testWallet.connect(provider);
 

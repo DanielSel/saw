@@ -1,5 +1,11 @@
 # Development Notes
 
+## Smart Contract Deployment
+
+### Truffle
+* `truffle.cmd compile`
+* `truffle.cmd migrate --reset --network ropsten`
+
 ## gRPC Service Creation (Node.js)
 
 ### Generate stubs from .proto

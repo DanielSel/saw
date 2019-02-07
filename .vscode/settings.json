@@ -1,0 +1,23 @@
+{
+    "dev": {
+        "saw": {
+            "service": {
+                "env": {
+                    "SAW_DEBUG": "VSC",
+                    "SAW_LOG_LEVEL": "DEBUG",
+                    "SAW_CONTRACT_INFURA_TOKEN": "${config:ethereum.infuraApiKey}",
+                    "SAW_CONTRACT_WALLET_MNEMONIC": "${config:ethereum.masterWalletMnemonic}",
+                    "SAW_CONTRACT_JSON_PATH": "../../../../../smart_contracts/build/contracts/SawWallet.json",
+                    "SAW_CONTRACT_ADDRESS": "0x9c2D658E79b93c826227CCd6d63CeCdBB06C95E7",
+                }
+            },
+            "client": {
+                "env": {
+                "SAW_DEBUG": "VSC",
+                "SAW_LOG_LEVEL": "DEBUG",
+                "SAW_TEST_WALLET_MNEMONIC_1": "${config:ethereum.testWalletMnemonic_1}",
+                }
+            }
+        }
+    }
+}
