@@ -16,19 +16,10 @@ import {SawPopService} from "./grpc/saw_pop_grpc_pb";
 import {Pop, PopStatus, PopStatusCode, SessionIdRequest, SessionIdResponse} from "./grpc/saw_pop_pb";
 
 import {SawContract} from "./SawContract";
+import {IFinishedSession, SessionManager} from "./SessionManager";
 import {tracing} from "./tracing";
 
 // Global Types and Settings
-
-interface ISession  {
-    sessionId: number | undefined;
-    macAddr: string;
-    accTime: number;
-    lastPopTime: number;
-    lastValidPopSignature: string | undefined;
-    currentTimer: any;
-    active: boolean;
-}
 
 export class SawService {
     // tslint:disable: max-line-length
@@ -56,18 +47,17 @@ export class SawService {
     // Smart Contract
     private sawContract: SawContract;
 
+    // Session Manager
+    private sessionManager: SessionManager;
+
     // gRPC Services
     private grpcAuthService: Server;
     private grpcPopService: Server;
 
-    // Map of Ethereum Address to Session
-    // TODO: Enforce stuff (mac address format, etc.)?
-    private sessions: Map<string, ISession>;
-    private cashoutStore: Array<{sessionId: number, accTime: number, signature: string}> = [];
-
     constructor() {
         // SAW Configuration
         tracing.LOG_LEVEL = SawService.LOG_LEVEL;
+        tracing.log("SILLY", "SawService.constructor called.");
 
         // Smart Contract
         this.sawContract = new SawContract(SawService.CONTRACT_NETWORK, SawService.CONTRACT_INFURA_TOKEN!,
@@ -101,6 +91,9 @@ export class SawService {
             tracing.log("INFO", "Successfully connected to SAW Smart Contract.");
         }
 
+        // Session Manager
+        this.sessionManager = new SessionManager(SawService.SESSION_INACTIVITY_THRESHOLD);
+
         // AUTH Service
         this.grpcAuthService = new Server();
         this.grpcAuthService.addService(SawAuthService as any, this);
@@ -110,11 +103,10 @@ export class SawService {
         this.grpcPopService = new Server();
         this.grpcPopService.addService(SawPopService as any, this);
         this.grpcPopService.bind("0.0.0.0:6666", ServerCredentials.createInsecure());
-
-        this.sessions = new Map<string, ISession>();
     }
 
     public start() {
+        tracing.log("SILLY", "SawService.start called.");
         tracing.log("INFO", "Starting SAW Services...");
         tracing.log("INFO", "Starting SAW AUTH Service...");
         this.grpcAuthService.start();
@@ -123,8 +115,9 @@ export class SawService {
     }
 
     public stop() {
+        tracing.log("SILLY", "SawService.stop called.");
         tracing.log("INFO", "Stopping SAW Services...");
-        this.flushSessions(false);
+        this.sessionManager.flushSessions(false);
 
         const killAuthServiceTimer = setTimeout(() => {
             this.grpcAuthService.forceShutdown();
@@ -147,7 +140,7 @@ export class SawService {
     }
 
     public async authUser(call: ServerUnaryCall<UserAuthRequest>, callback: sendUnaryData<UserAuthResponse>) {
-        tracing.log("SILLY", "authUser called.");
+        tracing.log("SILLY", "SawService.authUser called.");
         const user = call.request.getUser();
         const pw = call.request.getPassword();
         const mac = call.request.getMacaddress();
@@ -187,7 +180,7 @@ export class SawService {
         }
 
         // If you made it here, you are good to go...
-        this.sessions.set(user, {
+        this.sessionManager.addSession(user, {
             accTime: 0,
             active: false,
             currentTimer: undefined,
@@ -196,7 +189,7 @@ export class SawService {
             macAddr: mac,
             sessionId: undefined,
         });
-        this.sessions.get(user)!.currentTimer = setTimeout(this.removeEmptyClientSession.bind(this),
+        this.sessionManager.getSession(user)!.currentTimer = setTimeout(this.removeEmptyClientSession.bind(this),
             SawService.MAX_POP_INTERVAL + SawService.POP_TOLERANCE,
             user);
         tracing.log("INFO", `Access granted to User "${user}" with MAC address "${mac}"`);
@@ -205,7 +198,7 @@ export class SawService {
     }
 
     public newSession(call: ServerUnaryCall<SessionIdRequest>, callback: sendUnaryData<SessionIdResponse>) {
-        tracing.log("SILLY", "newSession called.");
+        tracing.log("SILLY", "SawService.newSession called.");
         const ethAddr = call.request.getEthAddress();
         const signature = call.request.getSignature();
         const response = new SessionIdResponse();
@@ -216,12 +209,12 @@ export class SawService {
             responseStatus.setState(PopStatusCode.POP_INVALID);
             responseStatus.setMsg("Invalid Signature on Session ID Request");
             tracing.log("DEBUG", `Invalid Signature on Session ID Request from: ${ethAddr}`);
-        } else if (!this.sessions.has(ethAddr)) {
+        } else if (!this.sessionManager.getSession(ethAddr)) {
             responseStatus.setState(PopStatusCode.POP_CONNECTION_ERROR);
             responseStatus.setMsg(`No pre-session for ETH Address: ${ethAddr}. Authenticate using RADIUS first.`);
             tracing.log("DEBUG", `No pre-session for Session ID Request from: ${ethAddr}`);
         } else {
-            const session = this.sessions.get(ethAddr)!;
+            const session = this.sessionManager.getSession(ethAddr)!;
             clearTimeout(session.currentTimer);
             const sessionId = Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER - 1));
             session.sessionId = sessionId;
@@ -242,7 +235,7 @@ export class SawService {
     }
 
     public submitPop(call: ServerUnaryCall<Pop>, callback: sendUnaryData<PopStatus> ) {
-        tracing.log("SILLY", "submitPop called.");
+        tracing.log("SILLY", "SawService.submitPop called.");
 
         const now = Date.now();
         const sessionId = call.request.getSessionhash();
@@ -253,7 +246,9 @@ export class SawService {
 
         const response = new PopStatus();
 
-        if (!(this.sessions.has(ethAddr) && this.sessions.get(ethAddr)!.sessionId === sessionId)) {
+        if (!(this.sessionManager.getSession(ethAddr)
+            && this.sessionManager.getSession(ethAddr)!.sessionId === sessionId)) {
+
             response.setState(PopStatusCode.POP_INVALID);
             response.setMsg(`No Session for ETH Address: ${ethAddr}.`);
             tracing.log("DEBUG", `No Session for ETH Address: ${ethAddr}`);
@@ -261,7 +256,7 @@ export class SawService {
             return;
         }
 
-        const session = this.sessions.get(ethAddr)!;
+        const session = this.sessionManager.getSession(ethAddr)!;
 
         if (!session.active) {
             response.setState(PopStatusCode.POP_TIMEOUT);
@@ -304,19 +299,19 @@ export class SawService {
     }
 
     private removeEmptyClientSession(clientEthAddress: string) {
-        tracing.log("SILLY", "removeEmptyClientSession called.");
+        tracing.log("SILLY", "SawService.removeEmptyClientSession called.");
         tracing.log("INFO", `Removing client with ETH address ${clientEthAddress}.
             Reason: Empty Session, No POP Received`);
-        const macAddr = this.sessions.get(clientEthAddress)!.macAddr;
-        this.sessions.delete(clientEthAddress);
+        const macAddr = this.sessionManager.getSession(clientEthAddress)!.macAddr;
+        this.sessionManager.deleteSession(clientEthAddress);
         this.disassociateClient(clientEthAddress, macAddr);
     }
 
     private processFinishedSession(clientEthAddress: string, extraTimeUpdate?: {accTime: number, signature: string}) {
-        tracing.log("SILLY", "processFinishedSession called.");
+        tracing.log("SILLY", "SawService.processFinishedSession called.");
         const reason = extraTimeUpdate ? "Accumulated Time too low" : "POP Timeout";
         tracing.log("INFO", `Processing session of client with ETH address ${clientEthAddress}. Reason: ${reason}`);
-        const session = this.sessions.get(clientEthAddress)!;
+        const session = this.sessionManager.getSession(clientEthAddress)!;
         session.active = false;
         if (extraTimeUpdate) {
             session.accTime = extraTimeUpdate.accTime;
@@ -326,7 +321,7 @@ export class SawService {
     }
 
     private disassociateClient(ethAddr: string, macAddr: string) {
-        tracing.log("SILLY", "disassociateClient called.");
+        tracing.log("SILLY", "SawService.disassociateClient called.");
         // Don't try to hostapd_cli when debugging in IDE
         if (SawService.DEBUG && SawService.DEBUG.includes("VSC")) {
             tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
@@ -343,7 +338,7 @@ export class SawService {
 
     private recoverSignerAddress(message: string | number, signature: Signature | string)
             : string {
-        tracing.log("SILLY", "recoverSignerAddress called.");
+        tracing.log("SILLY", "SawService.recoverSignerAddress called.");
         if (typeof(message) === "number") {
             message = hexlify(message);
         }
@@ -356,48 +351,8 @@ export class SawService {
         }
     }
 
-    private flushSessions(inactiveOnly: boolean) {
-        tracing.log("SILLY", "flushSessions called.");
-        this.sessions.forEach((session, ethAddr, sessionsMap) => {
-            if (!inactiveOnly ||
-                (inactiveOnly && !session.active
-                    && session.lastPopTime < Date.now() + SawService.SESSION_INACTIVITY_THRESHOLD)) {
-
-                // Check if there is a point in cashing out the session
-                if (typeof(session.sessionId) === "number" && session.accTime > 0) {
-
-                    this.cashoutStore.push({
-                        accTime: session.accTime,
-                        sessionId: session.sessionId as number,
-                        signature: session.lastValidPopSignature as string,
-                    });
-                }
-
-                clearTimeout(session.currentTimer);
-                sessionsMap.delete(ethAddr);
-            }
-        });
-
-        this.saveCashoutStore();
-    }
-
-    private saveCashoutStore() {
-        tracing.log("SILLY", "saveCashoutStore called.");
-        // TODO
-    }
-
-    private saveActiveSessions() {
-        tracing.log("SILLY", "saveActiveSessions called.");
-        // TODO
-    }
-
-    private loadState() {
-        tracing.log("SILLY", "loadState called.");
-        // TODO
-    }
-
     private cashoutPops() {
-        tracing.log("SILLY", "cashout called.");
+        tracing.log("SILLY", "SawService.cashoutPops called.");
         // TODO
     }
 }

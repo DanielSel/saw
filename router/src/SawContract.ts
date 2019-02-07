@@ -2,8 +2,9 @@ import {readFileSync} from "fs";
 
 import {Contract, Wallet} from "ethers";
 import {InfuraProvider} from "ethers/providers";
-import {splitSignature, BigNumber} from "ethers/utils";
+import {BigNumber, splitSignature} from "ethers/utils";
 
+import {IFinishedSession} from "./SessionManager";
 import {tracing} from "./tracing";
 
 export class SawContract {
@@ -14,6 +15,7 @@ export class SawContract {
     constructor(network: string, infuraToken: string,
                 contractJsonPath: string, contractAddress?: string,
                 walletMnemonic?: string) {
+        tracing.log("SILLY", "SawContract.constructor called.");
 
         this.canBalance = false;
         this.canCashout = false;
@@ -55,6 +57,8 @@ export class SawContract {
     }
 
     public async getBalance(ethAddr: string): Promise<number> {
+        tracing.log("SILLY", "SawContract.getBalance called.");
+
         if (!this.canBalance) {
             tracing.log("VERBOSE", "Attempted Balance check denied (contract functionality is currently disabled).");
             return 0;
@@ -70,8 +74,9 @@ export class SawContract {
         }
     }
 
-    public async cashoutPops(cashoutStore: Array<{sessionId: number, accTime: number, signature: string}>) {
-        tracing.log("SILLY", "cashout called.");
+    public async cashoutPops(cashoutStore: IFinishedSession[]) {
+        tracing.log("SILLY", "SawContract.cashoutPops called.");
+
         if (!this.canCashout) {
             tracing.log("VERBOSE", "Attempted Cashout denied (cashout functionality is currently disabled).");
             return;
@@ -80,7 +85,8 @@ export class SawContract {
         await this.cashoutPopsSingle(cashoutStore);
     }
 
-    private async cashoutPopsSingle(cashoutStore: Array<{sessionId: number, accTime: number, signature: string}>) {
+    private async cashoutPopsSingle(cashoutStore: IFinishedSession[]) {
+        tracing.log("SILLY", "SawContract.cashoutPops called.");
         let txCount = await (this.contract!.signer as Wallet).getTransactionCount();
         cashoutStore.forEach(async (pop) => {
             try {
@@ -97,14 +103,15 @@ export class SawContract {
         });
     }
 
-    private async cashoutPopsList(cashoutStore: Array<{sessionId: number, accTime: number, signature: string}>) {
+    private async cashoutPopsList(cashoutStore: IFinishedSession[]) {
+        tracing.log("SILLY", "SawContract.cashoutPopsList called.");
         // TODO
     }
 
     private loadContractInfo(contractJsonPath: string, contractAddress?: string) 
         : {abi: string, address: string} | null {
 
-        tracing.log("SILLY", "SawContract.loadContractInfo.");
+        tracing.log("SILLY", "SawContract.loadContractInfo called.");
         let contractInfo;
         try {
             contractInfo = JSON.parse(readFileSync(contractJsonPath, "UTF-8"));
