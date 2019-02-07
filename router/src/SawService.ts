@@ -8,7 +8,6 @@
 // Imports
 import {hexlify, keccak256, recoverAddress, Signature} from "ethers/utils";
 import {sendUnaryData, Server, ServerCredentials, ServerUnaryCall} from "grpc";
-import {exec} from "shelljs";
 
 import {SawAuthService} from "./grpc/saw_auth_grpc_pb";
 import {AuthStatusCode, UserAuthRequest, UserAuthResponse} from "./grpc/saw_auth_pb";
@@ -92,7 +91,7 @@ export class SawService {
         }
 
         // Session Manager
-        this.sessionManager = new SessionManager(SawService.SESSION_INACTIVITY_THRESHOLD);
+        this.sessionManager = new SessionManager(SawService.SESSION_INACTIVITY_THRESHOLD, SawService.DEBUG);
 
         // AUTH Service
         this.grpcAuthService = new Server();
@@ -189,7 +188,8 @@ export class SawService {
             macAddr: mac,
             sessionId: undefined,
         });
-        this.sessionManager.getSession(user)!.currentTimer = setTimeout(this.removeEmptyClientSession.bind(this),
+        this.sessionManager.getSession(user)!.currentTimer = setTimeout(
+            this.sessionManager.removeEmptyClientSession.bind(this.sessionManager),
             SawService.MAX_POP_INTERVAL + SawService.POP_TOLERANCE,
             user);
         tracing.log("INFO", `Access granted to User "${user}" with MAC address "${mac}"`);
@@ -221,7 +221,7 @@ export class SawService {
             session.accTime = 0;
             session.active = true;
             session.lastPopTime = Date.now();
-            session.currentTimer = setTimeout(this.removeEmptyClientSession.bind(this),
+            session.currentTimer = setTimeout(this.sessionManager.removeEmptyClientSession.bind(this.sessionManager),
                 SawService.MAX_POP_INTERVAL + SawService.POP_TOLERANCE,
                 ethAddr);
             tracing.log("INFO", `New Session: ${sessionId} from client: ${ethAddr}`);
@@ -281,14 +281,14 @@ export class SawService {
 
             // Only give accTime if its actually more than what we already have
             const args = accTime > session.accTime ? [ethAddr, {accTime, signature}] : [ethAddr];
-            setImmediate(this.processFinishedSession.bind(this), ...args);
+            setImmediate(this.sessionManager.processFinishedSession.bind(this.sessionManager), ...args);
             callback(null, response);
             return;
         }
 
         session.accTime = accTime;
         session.lastPopTime = now;
-        session.currentTimer = setTimeout(this.processFinishedSession.bind(this),
+        session.currentTimer = setTimeout(this.sessionManager.processFinishedSession.bind(this.sessionManager),
             SawService.MAX_POP_INTERVAL + SawService.POP_TOLERANCE,
             ethAddr);
 
@@ -296,44 +296,6 @@ export class SawService {
         tracing.log("DEBUG", `Session: ${session.sessionId}: New Accumulated Time: ${session.accTime}`);
         response.setState(PopStatusCode.POP_OK);
         callback(null, response);
-    }
-
-    private removeEmptyClientSession(clientEthAddress: string) {
-        tracing.log("SILLY", "SawService.removeEmptyClientSession called.");
-        tracing.log("INFO", `Removing client with ETH address ${clientEthAddress}.
-            Reason: Empty Session, No POP Received`);
-        const macAddr = this.sessionManager.getSession(clientEthAddress)!.macAddr;
-        this.sessionManager.deleteSession(clientEthAddress);
-        this.disassociateClient(clientEthAddress, macAddr);
-    }
-
-    private processFinishedSession(clientEthAddress: string, extraTimeUpdate?: {accTime: number, signature: string}) {
-        tracing.log("SILLY", "SawService.processFinishedSession called.");
-        const reason = extraTimeUpdate ? "Accumulated Time too low" : "POP Timeout";
-        tracing.log("INFO", `Processing session of client with ETH address ${clientEthAddress}. Reason: ${reason}`);
-        const session = this.sessionManager.getSession(clientEthAddress)!;
-        session.active = false;
-        if (extraTimeUpdate) {
-            session.accTime = extraTimeUpdate.accTime;
-            session.lastValidPopSignature = extraTimeUpdate.signature;
-        }
-        this.disassociateClient(clientEthAddress, session.macAddr);
-    }
-
-    private disassociateClient(ethAddr: string, macAddr: string) {
-        tracing.log("SILLY", "SawService.disassociateClient called.");
-        // Don't try to hostapd_cli when debugging in IDE
-        if (SawService.DEBUG && SawService.DEBUG.includes("VSC")) {
-            tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
-            return;
-        }
-
-        if (exec(`hostapd_cli deauthenticate ${macAddr}`).code === 0) {
-            tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
-        } else {
-            // tslint:disable-next-line: max-line-length
-            tracing.log("ERRPR", `Failed to deassociate client with ETH address ${ethAddr} and MAC address ${macAddr}`);
-        }
     }
 
     private recoverSignerAddress(message: string | number, signature: Signature | string)
