@@ -42,8 +42,8 @@ async function runSimulation(arg: any) {
     arg.s = arg.s ? arg.s : "all";
 
     tracing.LOG_LEVEL = arg.l;
-    const testWallet = Wallet.fromMnemonic(process.env.SAW_CONTRACT_INFURA_TOKEN!)
-        .connect(new InfuraProvider("ropsten", process.env.SAW_TEST_WALLET_MNEMONIC_1!));
+    const testWallet = Wallet.fromMnemonic(process.env.SAW_TEST_WALLET_MNEMONIC_1!)
+        .connect(new InfuraProvider("ropsten", process.env.SAW_CONTRACT_INFURA_TOKEN!));
     const sawClient = new SawClient(testWallet, arg.h, arg.p);
     simulations[arg.s](sawClient);
 }

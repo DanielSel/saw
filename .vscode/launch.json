@@ -40,7 +40,7 @@
             "env": {
                 "SAW_DEBUG":  "${config:dev.saw.client.env.SAW_DEBUG}",
                 "SAW_LOG_LEVEL": "${config:dev.saw.client.env.SAW_LOG_LEVEL}",
-                "SAW_CONTRACT_INFURA_TOKEN": "${config:dev.saw.service.env.SAW_CONTRACT_INFURA_TOKEN}",
+                "SAW_CONTRACT_INFURA_TOKEN": "${config:dev.saw.client.env.SAW_CONTRACT_INFURA_TOKEN}",
                 "SAW_TEST_WALLET_MNEMONIC_1": "${config:dev.saw.client.env.SAW_TEST_WALLET_MNEMONIC_1}",
             }
         },
@@ -54,6 +54,7 @@
             "env": {
                 "SAW_DEBUG":  "${config:dev.saw.client.env.SAW_DEBUG}",
                 "SAW_LOG_LEVEL": "${config:dev.saw.client.env.SAW_LOG_LEVEL}",
+                "SAW_CONTRACT_INFURA_TOKEN": "${config:dev.saw.client.env.SAW_CONTRACT_INFURA_TOKEN}",
                 "SAW_TEST_WALLET_MNEMONIC_1": "${config:dev.saw.client.env.SAW_TEST_WALLET_MNEMONIC_1}",
             }
         }
