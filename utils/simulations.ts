@@ -42,8 +42,8 @@ async function runSimulation(arg: any) {
     arg.s = arg.s ? arg.s : "all";
 
     tracing.LOG_LEVEL = arg.l;
-    const testWallet = Wallet.fromMnemonic("***REMOVED***")
-        .connect(new InfuraProvider("ropsten", "***REMOVED***"));
+    const testWallet = Wallet.fromMnemonic("<secret>")
+        .connect(new InfuraProvider("ropsten", "<secret>"));
     const sawClient = new SawClient(testWallet, arg.h, arg.p);
     simulations[arg.s](sawClient);
 }
