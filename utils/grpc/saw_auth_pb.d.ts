@@ -12,6 +12,9 @@ export class UserAuthRequest extends jspb.Message {
     getPassword(): string;
     setPassword(value: string): void;
 
+    getMacaddress(): string;
+    setMacaddress(value: string): void;
+
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): UserAuthRequest.AsObject;
@@ -27,6 +30,7 @@ export namespace UserAuthRequest {
     export type AsObject = {
         user: string,
         password: string,
+        macaddress: string,
     }
 }
 

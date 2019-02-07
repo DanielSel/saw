@@ -9,6 +9,7 @@ service SawAuth {
 message UserAuthRequest {
     string user = 1;
     string password = 2;
+    string macAddress = 3;
 }
 
 message UserAuthResponse {

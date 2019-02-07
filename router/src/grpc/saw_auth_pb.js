@@ -62,7 +62,8 @@ proto.saw.UserAuthRequest.prototype.toObject = function(opt_includeInstance) {
 proto.saw.UserAuthRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     user: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    password: jspb.Message.getFieldWithDefault(msg, 2, "")
+    password: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    macaddress: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -107,6 +108,10 @@ proto.saw.UserAuthRequest.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setPassword(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setMacaddress(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -150,6 +155,13 @@ proto.saw.UserAuthRequest.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getMacaddress();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -180,6 +192,21 @@ proto.saw.UserAuthRequest.prototype.getPassword = function() {
 /** @param {string} value */
 proto.saw.UserAuthRequest.prototype.setPassword = function(value) {
   jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string macAddress = 3;
+ * @return {string}
+ */
+proto.saw.UserAuthRequest.prototype.getMacaddress = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/** @param {string} value */
+proto.saw.UserAuthRequest.prototype.setMacaddress = function(value) {
+  jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
