@@ -74,7 +74,7 @@ contract SawWallet {
     }
 
     // Get your own balance
-    function getBalance() external view returns (uint balance) {
+    function getOwnBalance() external view returns (uint balance) {
         return balances[msg.sender];
     }
 
@@ -84,7 +84,7 @@ contract SawWallet {
     }
 
     // Payout a single POP
-    function payoutPops(uint sessionId, uint accTime, uint8 v, bytes32 r, bytes32 s) external {
+    function payoutSinglePop(uint sessionId, uint accTime, uint8 v, bytes32 r, bytes32 s) external {
         address client = ecrecover(keccak256(abi.encodePacked(sessionId + accTime)), v, r, s);
         uint payment = accTime * WEI_PER_SECOND;
         require(balances[client] >= payment, "Insufficient funds in client account. Invalid Signature?");       
@@ -94,7 +94,7 @@ contract SawWallet {
     }
 
     // Payout a list of POPs (more efficient for a lot of pops)
-    function payoutPops(Pop[] memory pops) public {
+    function payoutPopList(Pop[] memory pops) public {
         uint[] memory successfulPops = new uint[](pops.length);
         for (uint i = 0; i < pops.length; i++) {
             address client = ecrecover(keccak256(abi.encodePacked(pops[i].sessionId + pops[i].accTime)), pops[i].v, pops[i].r, pops[i].s);

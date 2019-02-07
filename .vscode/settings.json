@@ -8,7 +8,7 @@
                     "SAW_CONTRACT_INFURA_TOKEN": "${config:ethereum.infuraApiKey}",
                     "SAW_CONTRACT_WALLET_MNEMONIC": "${config:ethereum.masterWalletMnemonic}",
                     "SAW_CONTRACT_JSON_PATH": "../../../../../smart_contracts/build/contracts/SawWallet.json",
-                    "SAW_CONTRACT_ADDRESS": "0x9c2D658E79b93c826227CCd6d63CeCdBB06C95E7",
+                    "SAW_CONTRACT_ADDRESS": "0x4cf85ea20e983bda66600bf5e593af7dbc34b138",
                 }
             },
             "client": {

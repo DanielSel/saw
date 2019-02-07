@@ -4,6 +4,8 @@ import {Wallet} from "ethers";
 import {hexlify, joinSignature, keccak256, SigningKey} from "ethers/utils";
 import {credentials} from "grpc";
 
+import {SawAuthClient} from "./grpc/saw_auth_grpc_pb";
+import {AuthStatusCode, UserAuthRequest, UserAuthResponse} from "./grpc/saw_auth_pb";
 import {SawPopClient} from "./grpc/saw_pop_grpc_pb";
 import {Pop, PopStatus, PopStatusCode, SessionIdRequest, SessionIdResponse} from "./grpc/saw_pop_pb";
 
@@ -14,19 +16,54 @@ const MAX_POP_INTERVAL = 10000; // ms
 const POP_TIME_SAFETY_MARGIN = 500; // ms
 
 export class SawClient {
+    private macAddress: string;
     private ethWallet: Wallet;
+    private authClient: SawAuthClient;
     private popClient: SawPopClient;
     private sessionId!: number;
     private prevPopTime!: number;
     private popTimer!: any;
     private accTime: number = 0;
 
-    constructor(ethWallet: Wallet, host?: string, port?: string) {
+    constructor(ethWallet: Wallet, host?: string, authPort?: string, popPort?: string, localMacAddress?: string) {
         this.ethWallet = ethWallet;
 
         const sawHost: string = host ? host : "localhost";
-        const sawPort: string = port ? port : "6666";
-        this.popClient = new SawPopClient( sawHost + ":" + sawPort, credentials.createInsecure());
+        const sawAuthPort: string = authPort ? authPort : "6667";
+        const sawPopPort: string = popPort ? popPort : "6666";
+        this.macAddress = localMacAddress ? localMacAddress : "00:66:00:66:00:66";
+        this.authClient = new SawAuthClient( sawHost + ":" + sawAuthPort, credentials.createInsecure());
+        this.popClient = new SawPopClient( sawHost + ":" + sawPopPort, credentials.createInsecure());
+    }
+
+    public async authenticate(): Promise<boolean> {
+        tracing.log("DEBUG", "Preparing to send authentication request...");
+        const authRequest = new UserAuthRequest();
+        const ethAddress = await this.ethWallet.getAddress();
+        tracing.log("DEBUG", `Client Ethereum Address: ${ethAddress}`);
+        authRequest.setUser(ethAddress);
+        const signature = this.signMessage(ethAddress);
+        tracing.log("DEBUG", `Signature: ${signature}`);
+        authRequest.setPassword(signature);
+        tracing.log("DEBUG", `MAC Address: ${this.macAddress}`);
+        authRequest.setMacaddress(this.macAddress);
+
+        tracing.log("DEBUG", "Sending authentication request...");
+        try {
+            const result = (await promisify(this.authClient.authUser)
+                            .call(this.authClient, authRequest) as UserAuthResponse);
+
+            if (result.getState() === AuthStatusCode.AUTH_OK) {
+                tracing.log("INFO", `Successfully authenticated.`);
+                return true;
+            } else {
+                tracing.log("ERROR", `Authentication Failed: Reason: ${result.getMsg()}`);
+                return false;
+            }
+        } catch (error) {
+            tracing.log("CRITICAL", "Could not authenticate.", error);
+            return false;
+        }
     }
 
     public async getSessionId(): Promise<number> {

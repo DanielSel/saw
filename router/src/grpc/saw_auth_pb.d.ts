@@ -65,9 +65,10 @@ export namespace UserAuthResponse {
 
 export enum AuthStatusCode {
     AUTH_OK = 0,
-    EMPTY_ACCOUNT = 1,
-    POLICY_REJECT = 2,
-    BLACKLISTED = 3,
-    AUTH_CONNECTION_ERROR = 4,
-    AUTH_NO_CLUE_WHATS_WRONG = 5,
+    INVALID_SIGNATURE = 1,
+    EMPTY_ACCOUNT = 2,
+    POLICY_REJECT = 3,
+    BLACKLISTED = 4,
+    AUTH_CONNECTION_ERROR = 5,
+    AUTH_NO_CLUE_WHATS_WRONG = 6,
 }

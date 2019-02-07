@@ -2,20 +2,23 @@
 // * Write cashout store to file on flush and load on startup
 // * Write active sessions to file and flush to cashout store on startup
 // * More Machine Interpretable Errors: Accumulated Time too low, POP Timeout (with values indicating how to fix)
+// * Externalize Configurations (Environment Variables?)
+// * Externalize Smart Contract Definitions
 
-import {promisify} from "util";
-
-import {Wallet} from "ethers";
+// Imports
 import {hexlify, keccak256, recoverAddress, Signature} from "ethers/utils";
 import {sendUnaryData, Server, ServerCredentials, ServerUnaryCall} from "grpc";
 import {exec} from "shelljs";
 
+import {SawAuthService} from "./grpc/saw_auth_grpc_pb";
+import {AuthStatusCode, UserAuthRequest, UserAuthResponse} from "./grpc/saw_auth_pb";
 import {SawPopService} from "./grpc/saw_pop_grpc_pb";
 import {Pop, PopStatus, PopStatusCode, SessionIdRequest, SessionIdResponse} from "./grpc/saw_pop_pb";
 
+import {SawContract} from "./SawContract";
 import {tracing} from "./tracing";
 
-tracing.LOG_LEVEL = process.env.SAW_LOG_LEVEL ? process.env.SAW_LOG_LEVEL : "INFO";
+// Global Types and Settings
 
 interface ISession  {
     sessionId: number | undefined;
@@ -27,19 +30,34 @@ interface ISession  {
     active: boolean;
 }
 
-class SawService {
-    // Service Configuration (Hardcoded for now)
-    private static SHUTDOWN_KILL_TIMEOUT = 5000; // ms
-    private static SESSION_INACTIVITY_THRESHOLD = 15000; // ms
-    private static CASHOUT_PERIOD = 3600; // s
-    private static CASHOUT_THRESHOLD = 20; // min. num. of POP's for cashout to happen
-    private static BLACKLIST_INTERVAL = 600; // s
+export class SawService {
+    // tslint:disable: max-line-length
+    // Service Configuration
+    private static DEBUG = process.env.SAW_DEBUG;
+    private static LOG_LEVEL = process.env.SAW_LOG_LEVEL ? process.env.SAW_LOG_LEVEL : "INFO";
+    private static SHUTDOWN_KILL_TIMEOUT = process.env.SAW_SHUTDOWN_KILL_TIMEOUT ? process.env.SAW_SHUTDOWN_KILL_TIMEOUT as unknown as number : 5000; // ms
+    private static SESSION_INACTIVITY_THRESHOLD = process.env.SAW_SESSION_INACTIVITY_THRESHOLD ? process.env.SAW_SESSION_INACTIVITY_THRESHOLD as unknown as number : 15000; // ms
+    private static CASHOUT_INTERVAL = process.env.SAW_CASHOUT_INTERVAL ? process.env.SAW_CASHOUT_INTERVAL as unknown as number : 3600; // s
+    private static CASHOUT_THRESHOLD = process.env.SAW_CASHOUT_THRESHOLD ? process.env.SAW_CASHOUT_THRESHOLD as unknown as number : 20; // min. num. of POP's for cashout to happen
+    private static BLACKLIST_TIME = process.env.SAW_BLACKLIST_TIME ? process.env.SAW_BLACKLIST_TIME as unknown as number : 600; // s
+    private static CONTRACT_NETWORK = process.env.SAW_CONTRACT_NETWORK ? process.env.SAW_CONTRACT_NETWORK : (process.env.SAW_DEBUG ? "ropsten" : "mainnet"); // Ethereum Network. Default: ROPSTEN in debug mode, MAINNET in production
+    private static CONTRACT_INFURA_TOKEN = process.env.SAW_CONTRACT_INFURA_TOKEN; // Access Token for Infura / No default
+    private static CONTRACT_WALLET_MNEMONIC = process.env.SAW_CONTRACT_WALLET_MNEMONIC; // Access Token for Infura / No default
+    private static CONTRACT_JSON_PATH = process.env.SAW_CONTRACT_JSON_PATH ? process.env.SAW_CONTRACT_JSON_PATH : "contract.json"; // Path to Contract ABI
+    private static CONTRACT_ADDRESS = process.env.SAW_CONTRACT_ADDRESS; // Contract deployment address / No default
 
-    // Admission Policy (Hardcoded for now)
-    private static MAX_POP_INTERVAL = 10000; // ms
-    private static POP_TOLERANCE = 200; // ms
-    private static MIN_INITIAL_FUNDS = 10000; // gwei
+    // Admission Policy
+    private static ALLOW_OFFLINE_OPERATION = process.env.SAW_ALLOW_OFFLINE_OPERATION; // Run without connection to Smart Contract (NOT RECOMMENDED!). "CASHOUT" = Allow running when unable to cashout, "ALL" = Allow operation without any connection (not even balance check)
+    private static MAX_POP_INTERVAL = process.env.SAW_MAX_POP_INTERVAL ? process.env.SAW_MAX_POP_INTERVAL as unknown as number : 10000; // ms
+    private static POP_TOLERANCE = process.env.SAW_POP_TOLERANCE ? process.env.SAW_POP_TOLERANCE as unknown as number : 200; // ms
+    private static MIN_INITIAL_FUNDS = process.env.SAW_MIN_INITIAL_FUNDS ? process.env.SAW_MIN_INITIAL_FUNDS as unknown as number : 10000; // gwei
+    // tslint:enable: max-line-length
 
+    // Smart Contract
+    private sawContract: SawContract;
+
+    // gRPC Services
+    private grpcAuthService: Server;
     private grpcPopService: Server;
 
     // Map of Ethereum Address to Session
@@ -48,45 +66,142 @@ class SawService {
     private cashoutStore: Array<{sessionId: number, accTime: number, signature: string}> = [];
 
     constructor() {
+        // SAW Configuration
+        tracing.LOG_LEVEL = SawService.LOG_LEVEL;
+
+        // Smart Contract
+        this.sawContract = new SawContract(SawService.CONTRACT_NETWORK, SawService.CONTRACT_INFURA_TOKEN!,
+            SawService.CONTRACT_JSON_PATH, SawService.CONTRACT_ADDRESS,
+            SawService.CONTRACT_WALLET_MNEMONIC);
+
+        if (!this.sawContract.canBalance &&
+            SawService.ALLOW_OFFLINE_OPERATION && SawService.ALLOW_OFFLINE_OPERATION === "ALL") {
+            // No Connection, but User allows it
+            tracing.log("WARNING", "Unable to connect to SAW Smart Contract. Balance Checks and Cashout not possible.");
+            tracing.log("WARNING", "ALLOW_OFFLINE_OPERATION is enabled. Continuing without ANY safety guarantees.");
+            tracing.log("WARNING", "This is risky and not recommended.");
+            tracing.log("WARNING", "You have been warned...");
+        } else if (this.sawContract.canBalance && !this.sawContract.canCashout &&
+            SawService.ALLOW_OFFLINE_OPERATION === "CASHOUT") {
+            // Problem with Wallet, but at least can check balance. User is OK with it
+            tracing.log("WARNING", "Unable to access Wallet. Cashout not possible.");
+            // tslint:disable-next-line: max-line-length
+            tracing.log("WARNING", "ALLOW_OFFLINE_OPERATION is allowed for this case. Continuing without periodical POP cashouts.");
+            tracing.log("WARNING", "This is kind of risky.");
+            // tslint:disable-next-line: max-line-length
+            tracing.log("WARNING", "Do not forget to fix the configuration or cashout manually in the next 24h or you will loose your earnings!");
+            tracing.log("WARNING", "You have been warned...");
+        } else if (!this.sawContract.canCashout || !this.sawContract.canBalance) {
+            // Contract not working properly and user is NOT OK with it
+            tracing.log("ERROR", "Unable to configure SAW Smart Contract");
+            tracing.log("ERROR", "Aborting Startup");
+            process.exit(2);
+        } else {
+            // All good
+            tracing.log("INFO", "Successfully connected to SAW Smart Contract.");
+        }
+
+        // AUTH Service
+        this.grpcAuthService = new Server();
+        this.grpcAuthService.addService(SawAuthService as any, this);
+        this.grpcAuthService.bind("0.0.0.0:6667", ServerCredentials.createInsecure());
+
+        // POP Service
         this.grpcPopService = new Server();
         this.grpcPopService.addService(SawPopService as any, this);
         this.grpcPopService.bind("0.0.0.0:6666", ServerCredentials.createInsecure());
 
         this.sessions = new Map<string, ISession>();
-
-        // DEBUG for now
-        const testClientEth = "0x9C850041C6F6A7430dF01A6c246f60bDa4313571";
-        this.sessions.set(testClientEth, {
-            accTime: 0,
-            active: false,
-            currentTimer: undefined,
-            lastPopTime: 0,
-            lastValidPopSignature: undefined,
-            macAddr: "00:00:00:00:00:00",
-            sessionId: undefined,
-        });
-        this.sessions.get(testClientEth)!.currentTimer = setTimeout(this.removeEmptyClientSession.bind(this),
-            SawService.MAX_POP_INTERVAL + SawService.POP_TOLERANCE,
-            testClientEth);
     }
 
     public start() {
+        tracing.log("INFO", "Starting SAW Services...");
+        tracing.log("INFO", "Starting SAW AUTH Service...");
+        this.grpcAuthService.start();
         tracing.log("INFO", "Starting SAW POP Service...");
         this.grpcPopService.start();
     }
 
     public stop() {
-        tracing.log("INFO", "Stopping SAW POP Service...");
+        tracing.log("INFO", "Stopping SAW Services...");
         this.flushSessions(false);
+
+        const killAuthServiceTimer = setTimeout(() => {
+            this.grpcAuthService.forceShutdown();
+            tracing.log("WARNING", "SAW AUTH Service was killed.");
+        }, SawService.SHUTDOWN_KILL_TIMEOUT);
         const killPopServiceTimer = setTimeout(() => {
             this.grpcPopService.forceShutdown();
             tracing.log("WARNING", "SAW POP Service was killed.");
         }, SawService.SHUTDOWN_KILL_TIMEOUT);
 
+        this.grpcAuthService.tryShutdown(() => {
+            tracing.log("INFO", "SAW AUTH Service stopped.");
+            clearTimeout(killAuthServiceTimer);
+        });
+
         this.grpcPopService.tryShutdown(() => {
             tracing.log("INFO", "SAW POP Service stopped.");
             clearTimeout(killPopServiceTimer);
         });
+    }
+
+    public async authUser(call: ServerUnaryCall<UserAuthRequest>, callback: sendUnaryData<UserAuthResponse>) {
+        tracing.log("SILLY", "authUser called.");
+        const user = call.request.getUser();
+        const pw = call.request.getPassword();
+        const mac = call.request.getMacaddress();
+        // tslint:disable-next-line: max-line-length
+        tracing.log("DEBUG", `Received Auth request from User "${user}" with password "${pw}" and MAC address "${mac}"`);
+        const response = new UserAuthResponse();
+
+        // Verify Signature
+        if (user !== this.recoverSignerAddress(user, pw)) {
+            tracing.log("VERBOSE", `Denied Auth request from User "${user}" with  MAC address "${mac}.
+             Reason: Invalid Signature."`);
+            response.setState(AuthStatusCode.INVALID_SIGNATURE);
+            response.setMsg("Invalid Signature! Maybe it's not your account...");
+            return;
+        }
+
+        // Check Blacklist
+        if (false) { // TODO
+            response.setState(AuthStatusCode.BLACKLISTED);
+            response.setMsg("You my friend know exactly why you are being rejected...");
+            callback(null, response);
+            return;
+        }
+
+        // Check Balance (if we can do balance checks)
+        if (this.sawContract.canBalance) {
+            const balance = await this.sawContract.getBalance(user);
+            tracing.log("DEBUG", `User "${user}" has balance "${balance} gwei"`);
+            if (balance < SawService.MIN_INITIAL_FUNDS) {
+                tracing.log("VERBOSE", `User "${user}" has insufficient funds.
+                 Minimum: "${SawService.MIN_INITIAL_FUNDS} wei"`);
+                response.setState(AuthStatusCode.EMPTY_ACCOUNT);
+                response.setMsg("If you have no money, how are you gonna pay?");
+                callback(null, response);
+                return;
+            }
+        }
+
+        // If you made it here, you are good to go...
+        this.sessions.set(user, {
+            accTime: 0,
+            active: false,
+            currentTimer: undefined,
+            lastPopTime: 0,
+            lastValidPopSignature: undefined,
+            macAddr: mac,
+            sessionId: undefined,
+        });
+        this.sessions.get(user)!.currentTimer = setTimeout(this.removeEmptyClientSession.bind(this),
+            SawService.MAX_POP_INTERVAL + SawService.POP_TOLERANCE,
+            user);
+        tracing.log("INFO", `Access granted to User "${user}" with MAC address "${mac}"`);
+        response.setState(AuthStatusCode.AUTH_OK);
+        callback(null, response);
     }
 
     public newSession(call: ServerUnaryCall<SessionIdRequest>, callback: sendUnaryData<SessionIdResponse>) {
@@ -213,7 +328,7 @@ class SawService {
     private disassociateClient(ethAddr: string, macAddr: string) {
         tracing.log("SILLY", "disassociateClient called.");
         // Don't try to hostapd_cli when debugging in IDE
-        if (process.env.SAW_DEBUG && process.env.SAW_DEBUG!.includes("VSC")) {
+        if (SawService.DEBUG && SawService.DEBUG.includes("VSC")) {
             tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
             return;
         }
@@ -281,7 +396,7 @@ class SawService {
         // TODO
     }
 
-    private cashout() {
+    private cashoutPops() {
         tracing.log("SILLY", "cashout called.");
         // TODO
     }

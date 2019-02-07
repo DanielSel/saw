@@ -19,47 +19,31 @@ import minimist from "minimist";
 import {Wallet} from "ethers";
 import {InfuraProvider} from "ethers/providers";
 
-import {SawClient} from "./saw_client";
+import {SawClient} from "./SawClient";
 import {tracing} from "./tracing";
 
 const simulations: any = {};
 
-simulations.happyClient = (sawClient: SawClient) => {
+simulations.happyClient = async (sawClient: SawClient) => {
     tracing.log("INFO", `Starting Simulation "happyClient"...`);
-    sawClient.popCycle();
+    if(await sawClient.authenticate()) {
+        await sawClient.popCycle();
+    }
 };
 
-simulations.all = (sawClient: SawClient) => {
+simulations.all = async (sawClient: SawClient) => {
     tracing.log("INFO", `Starting Simulation "all"...`);
-    simulations.happyClient(sawClient);
+    await simulations.happyClient(sawClient);
 };
 
-// Test
-function simpleTest() {
-    const provider = module.exports.provider = new InfuraProvider("ropsten",
-                                        "***REMOVED***");
-    const testMnemonic = process.env.SAW_TEST_WALLET_MNEMONIC_1!;
-    const testWallet = Wallet.fromMnemonic(testMnemonic);
-    testWallet.connect(provider);
-
-    const sawClient = new SawClient(testWallet);
-
-    // const response = await sawClient.getSessionId();
-    sawClient.popCycle();
-}
-
-simpleTest();
-
-function runSimulation(arg: any) {
+async function runSimulation(arg: any) {
     // Apply default values
-    arg.h = arg.h ? arg.h : "localhost";
-    arg.p = arg.p ? arg.p : "6666";
     arg.l = arg.l ? arg.l : "INFO";
     arg.s = arg.s ? arg.s : "all";
 
     tracing.LOG_LEVEL = arg.l;
-    const testWallet = Wallet.fromMnemonic("***REMOVED***");
-    testWallet.connect(new InfuraProvider("ropsten", "***REMOVED***"));
+    const testWallet = Wallet.fromMnemonic("***REMOVED***")
+        .connect(new InfuraProvider("ropsten", "***REMOVED***"));
     const sawClient = new SawClient(testWallet, arg.h, arg.p);
     simulations[arg.s](sawClient);
 }
@@ -67,8 +51,6 @@ function runSimulation(arg: any) {
 // Execute the Simulation on Startup
 // Usage: -s simulation name
 const argv = minimist(process.argv.slice(2), {alias: {
-    h: "host",
-    p: "port",
     l: "log-level",
     s: "simulation",
 }});
