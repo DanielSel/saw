@@ -1,16 +1,18 @@
 import {readFileSync} from "fs";
 
-import {Contract, Wallet} from "ethers";
+import {Contract, ContractTransaction, Wallet} from "ethers";
 import {InfuraProvider} from "ethers/providers";
 import {BigNumber, splitSignature} from "ethers/utils";
 
 import {IFinishedSession} from "./SessionManager";
-import {tracing} from "./tracing";
+import {tracing} from "./utils/tracing";
 
 export class SawContract {
     public readonly canBalance: boolean;
     public readonly canCashout: boolean;
     private contract: Contract | undefined;
+
+    private activeCasbout: boolean = false;
 
     constructor(network: string, infuraToken: string,
                 contractJsonPath: string, contractAddress?: string,
@@ -74,41 +76,74 @@ export class SawContract {
         }
     }
 
-    public async cashoutPops(cashoutStore: IFinishedSession[]) {
+    public async cashoutPops(getFinishedSessions: () => Map<number, IFinishedSession>) {
         tracing.log("SILLY", "SawContract.cashoutPops called.");
+
+        // Block overlapping cashouts
+        if (this.activeCasbout) {
+            tracing.log("WARN", "Attempted to Cashout during an active cashout. Maybe increase CASHOUT_INTERVAL?");
+            return;
+        }
+        this.activeCasbout = true;
 
         if (!this.canCashout) {
             tracing.log("VERBOSE", "Attempted Cashout denied (cashout functionality is currently disabled).");
             return;
         }
 
-        await this.cashoutPopsSingle(cashoutStore);
+        tracing.log("VERBOSE", "Beginninng to cashout all currently finished Sessions...");
+        const finishedSessions = getFinishedSessions();
+        if (finishedSessions.size === 0) {
+            tracing.log("VERBOSE", "No finished sessions (nothing to cashout).");
+            return;
+        }
+
+        const balanceBefore = await this.contract!.getOwnBalance();
+        tracing.log("VERBOSE", `Balance before Cashout: ${balanceBefore}`);
+
+        await this.cashoutPopsSingle(finishedSessions);
+
+        const balanceAfter = await this.contract!.getOwnBalance();
+        tracing.log("VERBOSE", `Balance after Cashout: ${balanceAfter}`);
+        this.activeCasbout = false;
     }
 
-    private async cashoutPopsSingle(cashoutStore: IFinishedSession[]) {
-        tracing.log("SILLY", "SawContract.cashoutPops called.");
+    private async cashoutPopsSingle(finishedSessions: Map<number, IFinishedSession>) {
+        tracing.log("SILLY", "SawContract.cashoutPopsSingle called.");
+
         let txCount = await (this.contract!.signer as Wallet).getTransactionCount();
-        cashoutStore.forEach(async (pop) => {
+        await finishedSessions.forEach(async (pop, sessionId, finishedSessionMap) => {
             try {
                 const signature = splitSignature(pop.signature);
-                await this.contract!.payoutPops(pop.sessionId, pop.accTime, signature.v, signature.r, signature.s,
-                    {nonce: txCount});
-            } catch (error) {
-                tracing.log("ERROR", `Failed to cashout POP
-                 (sessionId=${pop.sessionId}, accTime=${pop.accTime}, signature=${pop.signature})`,
+                const tx = await this.contract!.payoutSinglePop(sessionId, pop.accTime,
+                    signature.v, signature.r, signature.s,
+                    {gasLimit: 4600000, nonce: txCount}) as ContractTransaction;
+                const tr = await tx.wait();
+                if (tr.status) {
+                    finishedSessionMap.delete(sessionId);
+                    tracing.log("VERBOSE", `Successfully cashed out POP
+                     with Session ID: ${sessionId} and Accumulated Time: ${pop.accTime}`);
+                } else {
+                    tracing.log("ERROR", `Failed to cashout POP: Smart Contract Execution unsuccessful.
+                     (sessionId=${sessionId}, accTime=${pop.accTime}, signature=${pop.signature})`);
+                }
+        } catch (error) {
+                tracing.log("ERROR", `Failed to submit cashout request to Smart Contract for POP
+                 (sessionId=${sessionId}, accTime=${pop.accTime}, signature=${pop.signature})`,
                 error);
             }
 
             txCount++;
         });
+
     }
 
-    private async cashoutPopsList(cashoutStore: IFinishedSession[]) {
+    private async cashoutPopsList(finishedSessions: Map<number, IFinishedSession>) {
         tracing.log("SILLY", "SawContract.cashoutPopsList called.");
         // TODO
     }
 
-    private loadContractInfo(contractJsonPath: string, contractAddress?: string) 
+    private loadContractInfo(contractJsonPath: string, contractAddress?: string)
         : {abi: string, address: string} | null {
 
         tracing.log("SILLY", "SawContract.loadContractInfo called.");

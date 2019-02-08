@@ -6,7 +6,6 @@
 // * Externalize Smart Contract Definitions
 
 // Imports
-import {hexlify, keccak256, recoverAddress, Signature} from "ethers/utils";
 import {sendUnaryData, Server, ServerCredentials, ServerUnaryCall} from "grpc";
 
 import {SawAuthService} from "./grpc/saw_auth_grpc_pb";
@@ -16,7 +15,9 @@ import {Pop, PopStatus, PopStatusCode, SessionIdRequest, SessionIdResponse} from
 
 import {SawContract} from "./SawContract";
 import {IFinishedSession, SessionManager} from "./SessionManager";
-import {tracing} from "./tracing";
+
+import {recoverSignerAddress} from "./utils/crypto";
+import {tracing} from "./utils/tracing";
 
 // Global Types and Settings
 
@@ -27,9 +28,9 @@ export class SawService {
     private static LOG_LEVEL = process.env.SAW_LOG_LEVEL ? process.env.SAW_LOG_LEVEL : "INFO";
     private static SHUTDOWN_KILL_TIMEOUT = process.env.SAW_SHUTDOWN_KILL_TIMEOUT ? process.env.SAW_SHUTDOWN_KILL_TIMEOUT as unknown as number : 5000; // ms
     private static SESSION_INACTIVITY_THRESHOLD = process.env.SAW_SESSION_INACTIVITY_THRESHOLD ? process.env.SAW_SESSION_INACTIVITY_THRESHOLD as unknown as number : 15000; // ms
-    private static CASHOUT_INTERVAL = process.env.SAW_CASHOUT_INTERVAL ? process.env.SAW_CASHOUT_INTERVAL as unknown as number : 3600; // s
-    private static CASHOUT_THRESHOLD = process.env.SAW_CASHOUT_THRESHOLD ? process.env.SAW_CASHOUT_THRESHOLD as unknown as number : 20; // min. num. of POP's for cashout to happen
-    private static BLACKLIST_TIME = process.env.SAW_BLACKLIST_TIME ? process.env.SAW_BLACKLIST_TIME as unknown as number : 600; // s
+    private static CASHOUT_INTERVAL = process.env.SAW_CASHOUT_INTERVAL ? process.env.SAW_CASHOUT_INTERVAL as unknown as number : 30000; // 3600; // ms
+    private static CASHOUT_THRESHOLD = process.env.SAW_CASHOUT_THRESHOLD ? process.env.SAW_CASHOUT_THRESHOLD as unknown as number : 1; // 20; // min. num. of POP's for cashout to happen
+    private static BLACKLIST_TIME = process.env.SAW_BLACKLIST_TIME ? process.env.SAW_BLACKLIST_TIME as unknown as number : 600; // ms
     private static CONTRACT_NETWORK = process.env.SAW_CONTRACT_NETWORK ? process.env.SAW_CONTRACT_NETWORK : (process.env.SAW_DEBUG ? "ropsten" : "mainnet"); // Ethereum Network. Default: ROPSTEN in debug mode, MAINNET in production
     private static CONTRACT_INFURA_TOKEN = process.env.SAW_CONTRACT_INFURA_TOKEN; // Access Token for Infura / No default
     private static CONTRACT_WALLET_MNEMONIC = process.env.SAW_CONTRACT_WALLET_MNEMONIC; // Access Token for Infura / No default
@@ -52,6 +53,10 @@ export class SawService {
     // gRPC Services
     private grpcAuthService: Server;
     private grpcPopService: Server;
+
+    // Background Tasks
+    private inactiveSessionTimer: any;
+    private cashoutTimer: any;
 
     constructor() {
         // SAW Configuration
@@ -111,11 +116,23 @@ export class SawService {
         this.grpcAuthService.start();
         tracing.log("INFO", "Starting SAW POP Service...");
         this.grpcPopService.start();
+        tracing.log("INFO", "Setting up Background Tasks...");
+
+        // Flush Inactive Sessions (prepare for Cashout)
+        this.inactiveSessionTimer = setInterval(this.sessionManager.flushSessions.bind(this.sessionManager),
+        SawService.SESSION_INACTIVITY_THRESHOLD,
+        true);
+
+        this.cashoutTimer = setInterval(this.sawContract.cashoutPops.bind(this.sawContract),
+        SawService.CASHOUT_INTERVAL,
+        this.sessionManager.getFinishedSessionMap.bind(this.sessionManager));
     }
 
     public stop() {
         tracing.log("SILLY", "SawService.stop called.");
         tracing.log("INFO", "Stopping SAW Services...");
+        clearInterval(this.cashoutTimer);
+        clearInterval(this.inactiveSessionTimer);
         this.sessionManager.flushSessions(false);
 
         const killAuthServiceTimer = setTimeout(() => {
@@ -241,7 +258,7 @@ export class SawService {
         const sessionId = call.request.getSessionhash();
         const accTime = call.request.getAccTime();
         const signature = call.request.getSignature();
-        const ethAddr = this.recoverSignerAddress(sessionId + accTime, signature);
+        const ethAddr = this.recoverSignerAddress(sessionId + accTime, signature, 16);
         tracing.log("DEBUG", `POP received. ETH address: ${ethAddr}`);
 
         const response = new PopStatus();
@@ -288,6 +305,7 @@ export class SawService {
 
         session.accTime = accTime;
         session.lastPopTime = now;
+        session.lastValidPopSignature = signature;
         session.currentTimer = setTimeout(this.sessionManager.processFinishedSession.bind(this.sessionManager),
             SawService.MAX_POP_INTERVAL + SawService.POP_TOLERANCE,
             ethAddr);
@@ -298,24 +316,16 @@ export class SawService {
         callback(null, response);
     }
 
-    private recoverSignerAddress(message: string | number, signature: Signature | string)
+    private recoverSignerAddress(message: string | number, signature: string, size?: number)
             : string {
         tracing.log("SILLY", "SawService.recoverSignerAddress called.");
-        if (typeof(message) === "number") {
-            message = hexlify(message);
-        }
 
         try {
-            return recoverAddress(keccak256(message), signature);
+            return recoverSignerAddress(message, signature, size);
         } catch (error) {
             tracing.log("DEBUG", "Signature Verification Failed: Malformed message", error);
             return "";
         }
-    }
-
-    private cashoutPops() {
-        tracing.log("SILLY", "SawService.cashoutPops called.");
-        // TODO
     }
 }
 

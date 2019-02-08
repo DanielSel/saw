@@ -1,6 +1,6 @@
 import {exec} from "shelljs";
 
-import {tracing} from "./tracing";
+import {tracing} from "./utils/tracing";
 
 export interface ISession  {
     sessionId: number | undefined;
@@ -13,7 +13,6 @@ export interface ISession  {
 }
 
 export interface IFinishedSession {
-    sessionId: number;
     accTime: number;
     signature: string;
 }
@@ -26,7 +25,7 @@ export class SessionManager {
     // Map of Ethereum Address to Session
     // TODO: Enforce stuff (mac address format, etc.)?
     private sessions: Map<string, ISession>;
-    private cashoutStore: IFinishedSession[] = [];
+    private finishedSessions: Map<number, IFinishedSession>;
 
     constructor(sessionInactivityThreshold: number, debugMode?: string) {
         tracing.log("SILLY", "SessionManager.constructor called.");
@@ -34,6 +33,7 @@ export class SessionManager {
         this.debugMode = debugMode;
 
         this.sessions = new Map<string, ISession>();
+        this.finishedSessions = new Map<number, IFinishedSession>();
     }
 
     public addSession(ethAddress: string, newSession: ISession) {
@@ -49,6 +49,10 @@ export class SessionManager {
     public deleteSession(ethAddress: string): boolean {
         tracing.log("SILLY", "SessionManager.deleteSession called.");
         return this.sessions.delete(ethAddress);
+    }
+
+    public getFinishedSessionMap(): Map<number, IFinishedSession> {
+        return this.finishedSessions;
     }
 
     public removeEmptyClientSession(clientEthAddress: string) {
@@ -83,9 +87,8 @@ export class SessionManager {
                 // Check if there is a point in cashing out the session
                 if (typeof(session.sessionId) === "number" && session.accTime > 0) {
 
-                    this.cashoutStore.push({
+                    this.finishedSessions.set(session.sessionId as number, {
                         accTime: session.accTime,
-                        sessionId: session.sessionId as number,
                         signature: session.lastValidPopSignature as string,
                     });
                 }

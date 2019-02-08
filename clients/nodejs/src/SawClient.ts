@@ -1,7 +1,6 @@
 import {promisify} from "util";
 
 import {Wallet} from "ethers";
-import {hexlify, joinSignature, keccak256, SigningKey} from "ethers/utils";
 import {credentials} from "grpc";
 
 import {SawAuthClient} from "./grpc/saw_auth_grpc_pb";
@@ -9,9 +8,11 @@ import {AuthStatusCode, UserAuthRequest, UserAuthResponse} from "./grpc/saw_auth
 import {SawPopClient} from "./grpc/saw_pop_grpc_pb";
 import {Pop, PopStatus, PopStatusCode, SessionIdRequest, SessionIdResponse} from "./grpc/saw_pop_pb";
 
+import {signMessage} from "./utils/crypto";
 import {tracing} from "./utils/tracing";
 
 // SAW Configuration (To be externalized...)
+const MAX_SESSION_TIME = 79200000; // ms
 const MAX_POP_INTERVAL = 10000; // ms
 const POP_TIME_SAFETY_MARGIN = 500; // ms
 
@@ -149,28 +150,20 @@ export class SawClient {
         pop.setSessionhash(sessionId);
         tracing.log("SILLY", `Accumulated Time: ${accTime}`);
         pop.setAccTime(accTime);
-        const signature = this.signMessage(sessionId + accTime);
+        const signature = this.signMessage(sessionId + accTime, 16);
         tracing.log("DEBUG", `Signature: ${signature}`);
         pop.setSignature(signature);
         return pop;
     }
 
-    // Utility Functions
-    private signMessage(message: string | number): string {
-        if (typeof(message) === "number"){
-            message = hexlify(message);
-        }
+    private signMessage(message: string | number, size?: number): string {
+        tracing.log("SILLY", "SawClient.signMessage called.");
 
-        const messageHash = keccak256(message);
-        return joinSignature(this.getSigningKey().signDigest(messageHash));
-    }
-
-    private getSigningKey(): SigningKey {
-        const key = this.ethWallet.privateKey;
-        if (SigningKey.isSigningKey(key)) {
-            return key;
-        } else {
-            return new SigningKey(key);
+        try {
+            return signMessage(this.ethWallet, message, size);
+        } catch (error) {
+            tracing.log("DEBUG", "Unable to Sign Message: Malformed message or key", error);
+            throw error;
         }
     }
 }
