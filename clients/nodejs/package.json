@@ -1,0 +1,27 @@
+{
+  "name": "@saw/client",
+  "version": "0.1.0",
+  "description": "Node.js Client for Testing of SAW (Smart Autonomous Wifi)",
+  "main": "saw_service_test.js",
+  "dependencies": {
+    "ethers": "^4.0.23",
+    "google-protobuf": "^3.6.1",
+    "grpc": "^1.18.0",
+    "minimist": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/google-protobuf": "^3.2.7",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.1",
+    "typescript-tslint-plugin": "^0.3.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DanielSel/saw/tree/master/clients/nodejs"
+  },
+  "author": "Daniel Sel",
+  "license": "Apache-2.0"
+}

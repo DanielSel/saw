@@ -1,5 +1,14 @@
 # Development Notes
 
+## General
+
+### Symlinks
+We are using symlinks to link the utility classes into the sources of service and client since tsc path resolution is a PITA...
+* `.\utils\create_symlinks.cmd`
+or
+* `mklink /D clients\nodejs\src\utils ..\..\..\utils\src`
+* `mklink /D router\src\utils ..\..\utils\src`
+
 ## Smart Contract Deployment
 
 ### Truffle
@@ -9,7 +18,7 @@
 ## gRPC Service Creation (Node.js)
 
 ### Generate stubs from .proto
-* `npm install grpc-tools`
+* `npm install -g grpc-tools`
 * `.\utils\generate_grpc_stubs.cmd`
 
 

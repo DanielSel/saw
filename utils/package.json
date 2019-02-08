@@ -2,20 +2,18 @@
   "name": "@saw/utils",
   "version": "0.1.0",
   "description": "Utilities for Developmemnt and Testing of SAW (Smart Autonomous Wifi)",
-  "main": "saw_service_test.js",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "dependencies": {
-    "ethers": "^4.0.23",
-    "google-protobuf": "^3.6.1",
-    "grpc": "^1.18.0",
-    "minimist": "^1.2.0"
+    "ethers": "^4.0.23"
   },
   "devDependencies": {
-    "@types/google-protobuf": "^3.2.7",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1",
     "typescript-tslint-plugin": "^0.3.1"
   },
   "scripts": {
+    "build": "tsc -p ./tsconfig.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,5 +21,5 @@
     "url": "https://github.com/DanielSel/saw/tree/master/utils"
   },
   "author": "Daniel Sel",
-  "license": "ISC"
+  "license": "Apache-2.0"
 }

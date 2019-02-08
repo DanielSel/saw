@@ -20,7 +20,7 @@ import {Wallet} from "ethers";
 import {InfuraProvider} from "ethers/providers";
 
 import {SawClient} from "./SawClient";
-import {tracing} from "./tracing";
+import {tracing} from "./utils/tracing";
 
 const simulations: any = {};
 

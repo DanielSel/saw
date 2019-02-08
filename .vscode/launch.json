@@ -34,8 +34,8 @@
             "name": "client_all",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}\\utils\\simulations.ts",
-            "outFiles": ["${workspaceFolder}/utils/build/**/*.js"],
+            "program": "${workspaceFolder}/clients/nodejs/src/simulations.ts",
+            "outFiles": ["${workspaceFolder}/clients/nodejs/build/**/*.js"],
             "args": ["-s", "all", "-l", "DEBUG"],
             "env": {
                 "SAW_DEBUG":  "${config:dev.saw.client.env.SAW_DEBUG}",
@@ -48,8 +48,8 @@
             "name": "client_happy",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}\\utils\\simulations.ts",
-            "outFiles": ["${workspaceFolder}/utils/build/**/*.js"],
+            "program": "${workspaceFolder}/clients/nodejs/src/simulations.ts",
+            "outFiles": ["${workspaceFolder}/clients/nodejs/build/**/*.js"],
             "args": ["-s", "happyClient", "-l", "DEBUG"],
             "env": {
                 "SAW_DEBUG":  "${config:dev.saw.client.env.SAW_DEBUG}",

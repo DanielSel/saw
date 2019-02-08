@@ -9,7 +9,7 @@ import {AuthStatusCode, UserAuthRequest, UserAuthResponse} from "./grpc/saw_auth
 import {SawPopClient} from "./grpc/saw_pop_grpc_pb";
 import {Pop, PopStatus, PopStatusCode, SessionIdRequest, SessionIdResponse} from "./grpc/saw_pop_pb";
 
-import {tracing} from "./tracing";
+import {tracing} from "./utils/tracing";
 
 // SAW Configuration (To be externalized...)
 const MAX_POP_INTERVAL = 10000; // ms
