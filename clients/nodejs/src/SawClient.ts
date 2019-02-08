@@ -1,6 +1,9 @@
+import { readFileSync } from "fs";
 import {promisify} from "util";
 
-import {Wallet} from "ethers";
+import {Contract, ContractTransaction, Wallet} from "ethers";
+import { parseEther } from "ethers/utils";
+
 import {credentials} from "grpc";
 
 import {SawAuthClient} from "./grpc/saw_auth_grpc_pb";
@@ -35,6 +38,30 @@ export class SawClient {
         this.macAddress = localMacAddress ? localMacAddress : "00:66:00:66:00:66";
         this.authClient = new SawAuthClient( sawHost + ":" + sawAuthPort, credentials.createInsecure());
         this.popClient = new SawPopClient( sawHost + ":" + sawPopPort, credentials.createInsecure());
+    }
+
+    public async ensureDeposit(minBalance: number) {
+        tracing.log("DEBUG", `Ensuring minimum balance of: ${minBalance}`);
+        const sawContract = this.createSawContractInstance();
+        const balance = await sawContract.getOwnBalance();
+        tracing.log("DEBUG", `Current Balance: ${balance}`);
+        const minBalanceBig = parseEther(minBalance.toString());
+        if (minBalanceBig.gt(balance)) {
+            const deposit = minBalanceBig.sub(balance);
+            tracing.log("DEBUG", `Transferring Deposit: ${deposit}`);
+            const tx = await sawContract.deposit({value: deposit}) as ContractTransaction;
+            const tr = await tx.wait();
+            if (tr.status) {
+                const newBalance = await sawContract.getOwnBalance();
+                tracing.log("DEBUG", `New Balance: ${newBalance}`);
+                return true;
+            }   else {
+                tracing.log("ERROR", `Failed to transfer deposit.`);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public async authenticate(): Promise<boolean> {
@@ -165,5 +192,42 @@ export class SawClient {
             tracing.log("DEBUG", "Unable to Sign Message: Malformed message or key", error);
             throw error;
         }
+    }
+
+    // TODO: Externalize Config and Error Handling
+    private createSawContractInstance(): Contract {
+        const contractInfo = this.loadContractInfo(
+            process.env.SAW_CONTRACT_JSON_PATH!, process.env.SAW_CONTRACT_ADDRESS!);
+        return new Contract(contractInfo!.address, contractInfo!.abi, this.ethWallet);
+    }
+
+    private loadContractInfo(contractJsonPath: string, contractAddress?: string)
+        : {abi: string, address: string} | null {
+
+        tracing.log("SILLY", "SawContract.loadContractInfo called.");
+        let contractInfo;
+        try {
+            contractInfo = JSON.parse(readFileSync(contractJsonPath, "UTF-8"));
+        } catch (error) {
+            tracing.log("ERROR", "Failed to load Smart Contract Info from JSON File", error);
+            return null;
+        }
+
+        const abi = contractInfo.abi;
+        if (!abi) {
+            tracing.log("ERROR", "Contract JSON does not contain ABI");
+            tracing.log("DEBUG", "JSON Object", contractInfo);
+            return null;
+        }
+
+        const address = contractInfo.address ? contractInfo.address : contractAddress;
+        if (!address) {
+            tracing.log("ERROR", "Contract JSON does not contain address and SAW_CONTRACT_ADDRESS not set");
+            tracing.log("DEBUG", "JSON Object", contractInfo);
+            return null;
+        }
+
+        tracing.log("VERBOSE", "Successfully loaded Smart Contract ABI and ADDRESS");
+        return {abi, address};
     }
 }

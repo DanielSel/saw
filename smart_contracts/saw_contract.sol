@@ -7,13 +7,18 @@ contract SawWallet {
     mapping(address => uint) balances;
     mapping(address => OpenWithdrawal[]) openUserWithdrawals;
 
-    // You can withdraw the money after 1 day
-    uint constant WITHDRAW_DELAY = 60 * 60 * 24;
+    mapping(uint64 => uint) usedSessionIds;
+
+    // You can withdraw the money after 24h
+    uint constant WITHDRAW_DELAY = 86400;
+
+    // After 24h Session IDs can be reused
+    uint constant SESSION_ID_REUSE_TIMEOUT = 86400;
 
     // To be configurable and externalized (Every Provider can set up their own policies)
     // FW: Add Payment per Data Volume
     // WEI_PER_SECOND ~ 5 EUR / 24h at 100 EUR / ETH
-    uint constant WEI_PER_SECOND = 578703703703;
+    uint constant WEI_PER_MILLISECOND = 578703703;
 
     struct OpenWithdrawal {
         uint timestamp;
@@ -86,9 +91,13 @@ contract SawWallet {
     // Payout a single POP
     function payoutSinglePop(uint64 sessionId, uint64 accTime, uint8 v, bytes32 r, bytes32 s) external {
         address client = ecrecover(keccak256(abi.encodePacked(sessionId + accTime)), v, r, s);
-        uint payment = accTime * WEI_PER_SECOND;
-        require(balances[client] >= payment, "Insufficient funds in client account. Invalid Signature?");       
+        uint payment = accTime * WEI_PER_MILLISECOND;
+        require(balances[client] >= payment, "Insufficient funds in client account. Invalid Signature?");
 
+        // This works because usedSessionIds is a mapping in storage with all unset entries defaulting to 0, which is always smaller then a set timestamp
+        require(usedSessionIds[sessionId] < now - SESSION_ID_REUSE_TIMEOUT, "A session with the same ID has been cashed out during the last 24h");
+
+        usedSessionIds[sessionId] = now;
         balances[client] -= payment;
         balances[msg.sender] += payment;
     }
@@ -98,7 +107,7 @@ contract SawWallet {
         uint[] memory successfulPops = new uint[](pops.length);
         for (uint i = 0; i < pops.length; i++) {
             address client = ecrecover(keccak256(abi.encodePacked(pops[i].sessionId + pops[i].accTime)), pops[i].v, pops[i].r, pops[i].s);
-            uint payment = pops[i].accTime * WEI_PER_SECOND;
+            uint payment = pops[i].accTime * WEI_PER_MILLISECOND;
             if (balances[client] >= payment) {
                 balances[client] -= payment;
                 balances[msg.sender] += payment;

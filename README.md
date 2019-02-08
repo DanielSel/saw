@@ -27,3 +27,6 @@ TODO
 
 ### Android App
 * App could auto-react when the SAW Wifi is chosen
+
+### Technical Improvements
+* Safer Session ID Generation: Check Session IDs submitted to Smart Contract in last 24h (free)
