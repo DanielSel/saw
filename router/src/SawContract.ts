@@ -16,7 +16,7 @@ export class SawContract {
 
     constructor(network: string, infuraToken: string,
                 contractJsonPath: string, contractAddress?: string,
-                walletMnemonic?: string) {
+                walletPrivKey?: string, walletMnemonic?: string) {
         tracing.log("SILLY", "SawContract.constructor called.");
 
         this.canBalance = false;
@@ -36,9 +36,15 @@ export class SawContract {
         }
 
         let wallet;
-        if (walletMnemonic) {
+        if (walletPrivKey || walletMnemonic) {
             try {
-                wallet = Wallet.fromMnemonic(walletMnemonic).connect(provider);
+                if (walletPrivKey) {
+                    tracing.log("DEBUG", "Creating Wallet from Private Key...");
+                    wallet = new Wallet(walletPrivKey, provider);
+                } else {
+                    tracing.log("DEBUG", "Creating Wallet from Mnemonic...");
+                    wallet = Wallet.fromMnemonic(walletMnemonic!).connect(provider);
+                }
                 tracing.log("VERBOSE", "Ethereum Wallet connected. Cashout Enabled.");
                 tracing.log("VERBOSE", "NOTE: Ensure you have sufficient funds for gas fees.");
                 this.canCashout = true;

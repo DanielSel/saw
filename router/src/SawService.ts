@@ -33,7 +33,8 @@ export class SawService {
     private static BLACKLIST_TIME = process.env.SAW_BLACKLIST_TIME ? process.env.SAW_BLACKLIST_TIME as unknown as number : 600; // ms
     private static CONTRACT_NETWORK = process.env.SAW_CONTRACT_NETWORK ? process.env.SAW_CONTRACT_NETWORK : (process.env.SAW_DEBUG ? "ropsten" : "mainnet"); // Ethereum Network. Default: ROPSTEN in debug mode, MAINNET in production
     private static CONTRACT_INFURA_TOKEN = process.env.SAW_CONTRACT_INFURA_TOKEN; // Access Token for Infura / No default
-    private static CONTRACT_WALLET_MNEMONIC = process.env.SAW_CONTRACT_WALLET_MNEMONIC; // Access Token for Infura / No default
+    private static CONTRACT_WALLET_PRIVATEKEY = process.env.SAW_CONTRACT_WALLET_PRIVATEKEY; // Master Wallet Private Key / No default
+    private static CONTRACT_WALLET_MNEMONIC = process.env.SAW_CONTRACT_WALLET_MNEMONIC; // Master Wallet Private Key / No default
     private static CONTRACT_JSON_PATH = process.env.SAW_CONTRACT_JSON_PATH ? process.env.SAW_CONTRACT_JSON_PATH : "contract.json"; // Path to Contract ABI
     private static CONTRACT_ADDRESS = process.env.SAW_CONTRACT_ADDRESS; // Contract deployment address / No default
 
@@ -66,7 +67,7 @@ export class SawService {
         // Smart Contract
         this.sawContract = new SawContract(SawService.CONTRACT_NETWORK, SawService.CONTRACT_INFURA_TOKEN!,
             SawService.CONTRACT_JSON_PATH, SawService.CONTRACT_ADDRESS,
-            SawService.CONTRACT_WALLET_MNEMONIC);
+            SawService.CONTRACT_WALLET_PRIVATEKEY, SawService.CONTRACT_WALLET_MNEMONIC);
 
         if (!this.sawContract.canBalance &&
             SawService.ALLOW_OFFLINE_OPERATION && SawService.ALLOW_OFFLINE_OPERATION === "ALL") {
