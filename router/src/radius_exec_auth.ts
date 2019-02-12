@@ -8,7 +8,7 @@ import {AuthStatusCode, UserAuthRequest} from "./grpc/saw_auth_pb";
 // Password: Expected Signature for the UserName (to prove that user in fact is owner of the account)
 const user = process.env["User-Name"];
 const pw = process.env["User-Password"];
-const mac = process.env["Calling-Station-ID"];
+const mac = process.env["Calling-Station-Id"];
 
 if (!user || !pw || !mac) {
     // RADIUS "Invalid User Configuration Entry"
