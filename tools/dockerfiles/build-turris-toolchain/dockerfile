@@ -1,0 +1,22 @@
+FROM ubuntu:bionic
+RUN apt-get update && \
+	apt-get -y install --no-install-recommends \
+    git ca-certificates \
+    build-essential python-dev \
+    gcc-multilib g++-multilib \
+    libncurses-dev libpsl-dev \
+    unzip file curl wget gawk \
+    sudo
+
+RUN useradd -m build
+RUN echo 'build ALL=(ALL)	NOPASSWD: ALL' >> /etc/sudoers
+USER build
+
+WORKDIR /home/build
+RUN git clone -b v4.0 https://gitlab.labs.nic.cz/turris/turris-build.git
+
+WORKDIR /home/build/turris-build
+RUN ./compile_pkgs prepare_tools -t omnia
+
+WORKDIR /home/build/turris-build/build
+ENTRYPOINT bash
