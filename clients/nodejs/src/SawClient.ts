@@ -64,6 +64,14 @@ export class SawClient {
         return true;
     }
 
+    public async getAuthParameters(): Promise<{user: string, password: string}> {
+        const ret: any = {};
+        const ethAddress = await this.ethWallet.getAddress();
+        ret.user = ethAddress;
+        ret.password = this.signMessage(ethAddress);
+        return ret;
+    }
+
     public async authenticate(): Promise<boolean> {
         tracing.log("DEBUG", "Preparing to send authentication request...");
         const authRequest = new UserAuthRequest();

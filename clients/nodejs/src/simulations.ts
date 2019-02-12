@@ -18,6 +18,14 @@ simulations.happyClient = async (sawClient: SawClient) => {
     }
 };
 
+simulations.realClient = async (sawClient: SawClient) => {
+    tracing.log("INFO", `Starting Simulation "Real Client"...`);
+    const authParameters = await sawClient.getAuthParameters();
+    tracing.log("INFO", `Username: ${authParameters.user}`);
+    tracing.log("INFO", `Password: ${authParameters.password}`);
+    await sawClient.popCycle();
+};
+
 simulations.all = async (sawClient: SawClient) => {
     tracing.log("INFO", `Starting Simulation "all"...`);
     await simulations.happyClient(sawClient);

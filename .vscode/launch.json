@@ -101,6 +101,23 @@
                 "SAW_TEST_WALLET_MNEMONIC_19": "${config:dev.saw.client.env.SAW_TEST_WALLET_MNEMONIC_19}",
                 "SAW_TEST_WALLET_MNEMONIC_20": "${config:dev.saw.client.env.SAW_TEST_WALLET_MNEMONIC_20}",
             }
+        },
+        {
+            "name": "client_real",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/clients/nodejs/src/simulations.ts",
+            "outFiles": ["${workspaceFolder}/clients/nodejs/build/**/*.js"],
+            "cwd": "${workspaceFolder}/clients/nodejs/build",
+            "args": ["-s", "realClient", "-l", "DEBUG", "-h", "192.168.1.1"],
+            "env": {
+                "SAW_DEBUG":  "${config:dev.saw.client.env.SAW_DEBUG}",
+                "SAW_LOG_LEVEL": "${config:dev.saw.client.env.SAW_LOG_LEVEL}",
+                "SAW_CONTRACT_INFURA_TOKEN": "${config:dev.saw.client.env.SAW_CONTRACT_INFURA_TOKEN}",
+                "SAW_CONTRACT_JSON_PATH":  "${config:dev.saw.client.env.SAW_CONTRACT_JSON_PATH}",
+                "SAW_CONTRACT_ADDRESS": "${config:dev.saw.client.env.SAW_CONTRACT_ADDRESS}",
+                "SAW_TEST_WALLET_MNEMONIC_1": "${config:dev.saw.client.env.SAW_TEST_WALLET_MNEMONIC_1}",
+            }
         }
     ]
 }
