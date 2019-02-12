@@ -5,8 +5,8 @@
   "main": "saw_service.js",
   "dependencies": {
     "ethers": "^4.0.23",
-    "grpc": "^1.18.0",
     "google-protobuf": "^3.6.1",
+    "grpc": "^1.18.0",
     "shelljs": "^0.8.3"
   },
   "devDependencies": {},
