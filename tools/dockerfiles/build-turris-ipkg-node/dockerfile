@@ -1,0 +1,18 @@
+ARG TOOLCHAIN_VERSION=latest-omnia-hbk-openwrt-18.06
+FROM saw1/build-turris-ipkg:${TOOLCHAIN_VERSION}
+
+RUN echo "src-git node https://github.com/nxhack/openwrt-node-packages.git" >> feeds.conf.default
+RUN ./scripts/feeds update node \
+ && ./scripts/feeds install -p node node
+
+RUN make defconfig \
+ && echo "CONFIG_PACKAGE_node=m" >> .config \
+ && echo "CONFIG_NODEJS_11=y" >> .config \
+ && echo "CONFIG_NODEJS_ICU_SYSTEM=y" >> .config
+
+RUN make package/node/compile V=sc
+
+USER root
+CMD cp -r ./bin/packages/arm_cortex-a9_vfpv3/* /dist/
+
+VOLUME /dist

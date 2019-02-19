@@ -1,0 +1,32 @@
+FROM ubuntu:bionic
+
+ARG SDK_BRANCH=omnia-hbk
+ARG SDK_OPENWRT_BRANCH=openwrt-18.06
+ARG SDK_NAME=turrisos-sdk-4.0-mvebu-cortexa9_gcc-7.3.0_musl_eabi.Linux-x86_64
+ENV SDK_NAME=${SDK_NAME}
+
+RUN apt-get update && \
+	apt-get -y install --no-install-recommends \
+    git ca-certificates \
+    build-essential ccache python-dev \
+    gcc-multilib g++-multilib \
+    libncurses-dev libpsl-dev \
+    unzip file curl wget gawk xz-utils \
+    && apt-get clean
+
+# Needs to be "beast" because of hardcoded stuff in current SDK (bug?)
+RUN useradd -m beast
+USER beast
+WORKDIR /home/beast
+RUN curl https://repo.turris.cz/${SDK_BRANCH}/${SDK_NAME}.tar.xz | tar Jx
+
+RUN git clone --depth 1 https://git.openwrt.org/openwrt/openwrt.git -b ${SDK_OPENWRT_BRANCH} \
+ && find ./openwrt -mindepth 1 ! -regex '^./openwrt/package\(/.*\)?' -delete
+
+WORKDIR /home/beast/${SDK_NAME}
+
+RUN echo "src-link base /home/beast/openwrt/package" > feeds.conf.default
+RUN echo "src-git packages https://git.lede-project.org/feed/packages.git^origin/${SDK_OPENWRT_BRANCH}" >> feeds.conf.default
+RUN echo "src-git turrispackages https://gitlab.labs.nic.cz/turris/turris-os-packages.git" >> feeds.conf.default
+
+RUN ./scripts/feeds update -a
