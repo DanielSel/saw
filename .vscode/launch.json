@@ -19,8 +19,8 @@
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/router/src/SawService.ts",
-            "outFiles": ["${workspaceFolder}/router/deploy/etc/saw/service/**/*.js"],
-            "cwd": "${workspaceFolder}/router/deploy/etc/saw/service",
+            "outFiles": ["${workspaceFolder}/router/build/**/*.js"],
+            "cwd": "${workspaceFolder}/router/build",
             "env": {
                 "SAW_DEBUG":  "${config:dev.saw.service.env.SAW_DEBUG}",
                 "SAW_LOG_LEVEL": "${config:dev.saw.service.env.SAW_LOG_LEVEL}",
