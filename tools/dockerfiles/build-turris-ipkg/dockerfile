@@ -1,9 +1,8 @@
 FROM ubuntu:bionic
 
-ARG SDK_BRANCH=omnia-hbk
-ARG SDK_OPENWRT_BRANCH=openwrt-18.06
-ARG SDK_NAME=turrisos-sdk-4.0-mvebu-cortexa9_gcc-7.3.0_musl_eabi.Linux-x86_64
-ENV SDK_NAME=${SDK_NAME}
+ENV SDK_BRANCH=omnia-hbk
+ENV SDK_OPENWRT_BRANCH=openwrt-18.06
+ENV SDK_NAME=turrisos-sdk-4.0-mvebu-cortexa9_gcc-7.3.0_musl_eabi.Linux-x86_64
 
 
 RUN apt-get update && \
@@ -34,7 +33,7 @@ RUN echo "src-link custom /pkgs" >> feeds.conf.default
 
 
 # ENV PKG_NAME
-CMD ./scripts/feeds update -p custom  \
+CMD ./scripts/feeds update custom  \
     && ./scripts/feeds install -p custom ${PKG_NAME} \
     && make defconfig \
     && make -j $((`nproc`+1)) package/${PKG_NAME}/compile V=sc \

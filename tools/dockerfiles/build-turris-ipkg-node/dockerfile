@@ -1,18 +1,23 @@
 ARG TOOLCHAIN_VERSION=latest-omnia-hbk-openwrt-18.06
 FROM saw1/build-turris-ipkg:${TOOLCHAIN_VERSION}
 
-RUN echo "src-git node https://github.com/nxhack/openwrt-node-packages.git" >> feeds.conf.default
+ENV SAW_BRANCH=master
+
+WORKDIR /home/beast
+RUN git clone --depth 1 https://github.com/DanielSel/saw.git -b ${SAW_BRANCH} \
+ && find ./openwrt -mindepth 1 ! -regex '^./saw/router/openwrt_pkgs/node\(/.*\)?' -delete
+
+# USER root
+# RUN apt-get update && \
+# 	apt-get -y install --no-install-recommends \
+#     zlib
+
+# USER beast
+WORKDIR /home/beast/${SDK_NAME}
+RUN echo "src-link node /home/beast/saw/router/openwrt_pkgs" >> feeds.conf.default
 RUN ./scripts/feeds update node \
  && ./scripts/feeds install -p node node
 
 RUN make defconfig \
- && echo "CONFIG_PACKAGE_node=m" >> .config \
- && echo "CONFIG_NODEJS_11=y" >> .config \
- && echo "CONFIG_NODEJS_ICU_SYSTEM=y" >> .config
-
-RUN make package/node/compile V=sc
-
-USER root
-CMD cp -r ./bin/packages/arm_cortex-a9_vfpv3/* /dist/
-
-VOLUME /dist
+    && make package/node/compile V=sc \
+    && make package/node/install V=sc

@@ -35,7 +35,7 @@ define Package/node
   TITLE:=Node.js is a platform built on Chrome's JavaScript runtime
   URL:=https://nodejs.org/
   DEPENDS:=+libstdcpp +zlib +libopenssl +libatomic \
-           +USE_UCLIBC:libpthread +USE_UCLIBC:librt +NODEJS_ICU_SYSTEM:icu \
+           +USE_UCLIBC:libpthread +USE_UCLIBC:librt
 endef
 
 define Package/node/description
@@ -79,7 +79,7 @@ CONFIGURE_ARGS:= \
 	--shared-nghttp2 \
 	--shared-libuv \
 	--shared-http-parser \
-	--with-intl=small-icu
+	--with-intl=small-icu \
 	$(if $(findstring mips,$(NODEJS_CPU)), \
 		$(if $(CONFIG_SOFT_FLOAT),--with-mips-float-abi=soft)) \
 	$(if $(findstring +neon,$(CONFIG_CPU_TYPE)),--with-arm-fpu=neon) \
@@ -112,9 +112,6 @@ endef
 define Package/node/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/node $(1)/usr/bin/
-ifeq ($(CONFIG_NODEJS_DEBUG),y)
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/node_g $(1)/usr/bin/
-endif
 endef
 
 define Package/node-npm/install
@@ -122,9 +119,7 @@ define Package/node-npm/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/node_modules/* $(1)/usr/lib/node_modules/
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(LN) ../lib/node_modules/npm/bin/npm-cli.js $(1)/usr/bin/npm
-ifneq ($(CONFIG_NODEJS_6),y)
 	$(LN) ../lib/node_modules/npm/bin/npx-cli.js $(1)/usr/bin/npx
-endif
 endef
 
 $(eval $(call HostBuild))
