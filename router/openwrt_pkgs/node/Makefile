@@ -76,9 +76,6 @@ CONFIGURE_ARGS:= \
 	--without-snapshot \
 	--shared-zlib \
 	--shared-openssl \
-	--shared-nghttp2 \
-	--shared-libuv \
-	--shared-http-parser \
 	--with-intl=small-icu \
 	$(if $(findstring mips,$(NODEJS_CPU)), \
 		$(if $(CONFIG_SOFT_FLOAT),--with-mips-float-abi=soft)) \
