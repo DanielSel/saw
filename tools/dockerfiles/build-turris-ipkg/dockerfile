@@ -5,6 +5,7 @@ ARG SDK_OPENWRT_BRANCH=openwrt-18.06
 ARG SDK_NAME=turrisos-sdk-4.0-mvebu-cortexa9_gcc-7.3.0_musl_eabi.Linux-x86_64
 ENV SDK_NAME=${SDK_NAME}
 
+
 RUN apt-get update && \
 	apt-get -y install --no-install-recommends \
     git ca-certificates \
@@ -28,5 +29,16 @@ WORKDIR /home/beast/${SDK_NAME}
 RUN echo "src-link base /home/beast/openwrt/package" > feeds.conf.default
 RUN echo "src-git packages https://git.lede-project.org/feed/packages.git^origin/${SDK_OPENWRT_BRANCH}" >> feeds.conf.default
 RUN echo "src-git turrispackages https://gitlab.labs.nic.cz/turris/turris-os-packages.git" >> feeds.conf.default
-
 RUN ./scripts/feeds update -a
+RUN echo "src-link custom /pkgs" >> feeds.conf.default
+
+
+# ENV PKG_NAME
+CMD ./scripts/feeds update -p custom  \
+    && ./scripts/feeds install -p custom ${PKG_NAME} \
+    && make defconfig \
+    && make -j $((`nproc`+1)) package/${PKG_NAME}/compile V=sc \
+    && cp -r ./bin/packages/arm_cortex-a9_vfpv3/* /dist/
+
+VOLUME /pkgs
+VOLUME /dist
