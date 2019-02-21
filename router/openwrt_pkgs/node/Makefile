@@ -34,7 +34,7 @@ define Package/node
   SUBMENU:=Node.js
   TITLE:=Node.js is a platform built on Chrome's JavaScript runtime
   URL:=https://nodejs.org/
-  DEPENDS:=+libstdcpp +zlib +libopenssl +libatomic \
+  DEPENDS:=+libstdcpp +zlib +libatomic \
            +USE_UCLIBC:libpthread +USE_UCLIBC:librt
 endef
 
@@ -75,7 +75,6 @@ CONFIGURE_ARGS:= \
 	--dest-os=linux \
 	--without-snapshot \
 	--shared-zlib \
-	--shared-openssl \
 	--with-intl=small-icu \
 	$(if $(findstring mips,$(NODEJS_CPU)), \
 		$(if $(CONFIG_SOFT_FLOAT),--with-mips-float-abi=soft)) \
