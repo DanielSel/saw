@@ -1,0 +1,19 @@
+name: $(Date:yyyyMMdd)
+variables:
+- name: TURRIS_SDK_NAME
+  value: turrisos-sdk-4.0-mvebu-cortexa9_gcc-7.3.0_musl_eabi.Linux-x86_64
+- name: TURRIS_SDK_BRANCH
+  value: omnia-hbk
+- name: TURRIS_OPENWRT_BRANCH
+  value: openwrt-18.06
+
+jobs:
+  - template: templates/docker-build-turris
+    parameters:
+      imagename: build-turris-ipkg
+  - template: templates/docker-build-turris
+    parameters:
+      imagename: build-turris-ipkg-node
+  - template: templates/docker-build
+    parameters:
+      imagename: deploy-bintray

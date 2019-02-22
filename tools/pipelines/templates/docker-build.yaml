@@ -1,0 +1,32 @@
+parameters:
+  imagename: ''
+
+jobs:
+- job: docker-build
+  pool:
+    vmImage: Hosted Ubuntu 1604
+  steps:
+  - task: Docker@1
+    displayName: 'build ${{ parameters.imagename }}'
+    inputs:
+      containerregistrytype: 'Container Registry'
+      dockerRegistryEndpoint: 'Daniel-DockerHub'
+      command: 'build'
+      dockerFile: 'tools/dockerfiles/${{ parameters.imagename }}/dockerfile'
+      imageName: 'saw1/${{ parameters.imagename }}:$(Build.BuildNumber)'
+      qualifyImageName: false
+      addDefaultLabels: false
+      includeLatestTag: true
+    env:
+      SDK_BRANCH: $(TURRIS_SDK_BRANCH)
+      SDK_NAME: $(TURRIS_SDK_NAME)
+      SDK_OPENWRT_BRANCH: $(TURRIS_OPENWRT_BRANCH)
+
+  - task: Docker@1
+    displayName: 'push ${{ parameters.imagename }}'
+    inputs:
+      containerregistrytype: 'Container Registry'
+      dockerRegistryEndpoint: 'Daniel-DockerHub'
+      command: 'push'
+      imageName: 'saw1/${{ parameters.imagename }}'
+      qualifyImageName: false
