@@ -6,10 +6,9 @@ RUN apk add --update curl && rm -rf /var/cache/apk/*
 
 # ENV PKG_NAME
 # ENV PKG_VERSION
-# ENV PKG_FILE
 
 WORKDIR /deploy
-CMD curl -T ${PKG_FILE} -u${BINTRAY_CREDENTIALS} https://api.bintray.com/content/${BINTRAY_REPO}/${PKG_NAME}/${PKG_VERSION}/${PKG_FILE}?override=1 \
+CMD for FILE in /deploy/*; do curl -T $FILE -u${BINTRAY_CREDENTIALS} https://api.bintray.com/content/${BINTRAY_REPO}/${PKG_NAME}/${PKG_VERSION}/$FILE?override=1; done \
     && curl -X POST -u${BINTRAY_CREDENTIALS} https://api.bintray.com/content/${BINTRAY_REPO}/${PKG_NAME}/${PKG_VERSION}/publish
 
 VOLUME /deploy
