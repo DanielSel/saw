@@ -3,7 +3,7 @@ parameters:
 
 steps:
 - task: Docker@1
-  displayName: 'build ${{ parameters.imagename }}'
+  displayName: 'Build Docker Image'
   inputs:
     containerregistrytype: 'Container Registry'
     dockerRegistryEndpoint: 'Daniel-DockerHub'
@@ -18,9 +18,10 @@ steps:
     SDK_BRANCH: $(TURRIS_SDK_BRANCH)
     SDK_NAME: $(TURRIS_SDK_NAME)
     SDK_OPENWRT_BRANCH: $(TURRIS_OPENWRT_BRANCH)
+    SAW_BRANCH: ${Build.SourceBranchName}
 
 - task: Docker@1
-  displayName: 'push ${{ parameters.imagename }}'
+  displayName: 'Push Docker Image'
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   inputs:
     containerregistrytype: 'Container Registry'
