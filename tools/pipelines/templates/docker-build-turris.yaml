@@ -1,33 +1,30 @@
 parameters:
   imagename: ''
 
-jobs:
-- job: docker-build-turris
-  pool:
-    vmImage: Hosted Ubuntu 1604
-  steps:
-  - task: Docker@1
-    displayName: 'build ${{ parameters.imagename }}'
-    inputs:
-      containerregistrytype: 'Container Registry'
-      dockerRegistryEndpoint: 'Daniel-DockerHub'
-      command: 'build'
-      dockerFile: 'tools/dockerfiles/${{ parameters.imagename }}/dockerfile'
-      arguments: |
+steps:
+- task: Docker@1
+  displayName: 'build ${{ parameters.imagename }}'
+  inputs:
+    containerregistrytype: 'Container Registry'
+    dockerRegistryEndpoint: 'Daniel-DockerHub'
+    command: 'build'
+    dockerFile: 'tools/dockerfiles/${{ parameters.imagename }}/dockerfile'
+    arguments: |
       -t saw1/${{ parameters.imagename }}:latest-$(TURRIS_SDK_BRANCH)-$(TURRIS_OPENWRT_BRANCH) -t saw1/${{ parameters.imagename }}:latest
-      imageName: 'saw1/${{ parameters.imagename }}:$(Build.BuildNumber)-$(TURRIS_SDK_BRANCH)-$(TURRIS_OPENWRT_BRANCH)'
-      qualifyImageName: false
-      addDefaultLabels: false
-    env:
-      SDK_BRANCH: $(TURRIS_SDK_BRANCH)
-      SDK_NAME: $(TURRIS_SDK_NAME)
-      SDK_OPENWRT_BRANCH: $(TURRIS_OPENWRT_BRANCH)
+    imageName: 'saw1/${{ parameters.imagename }}:$(Build.BuildNumber)-$(TURRIS_SDK_BRANCH)-$(TURRIS_OPENWRT_BRANCH)'
+    qualifyImageName: false
+    addDefaultLabels: false
+  env:
+    SDK_BRANCH: $(TURRIS_SDK_BRANCH)
+    SDK_NAME: $(TURRIS_SDK_NAME)
+    SDK_OPENWRT_BRANCH: $(TURRIS_OPENWRT_BRANCH)
 
-  - task: Docker@1
-    displayName: 'push ${{ parameters.imagename }}'
-    inputs:
-      containerregistrytype: 'Container Registry'
-      dockerRegistryEndpoint: 'Daniel-DockerHub'
-      command: 'push'
-      imageName: 'saw1/${{ parameters.imagename }}'
-      qualifyImageName: false
+- task: Docker@1
+  displayName: 'push ${{ parameters.imagename }}'
+  condition: eq(variables['System.PullRequest.PullRequestId'], Null)
+  inputs:
+    containerregistrytype: 'Container Registry'
+    dockerRegistryEndpoint: 'Daniel-DockerHub'
+    command: 'push'
+    imageName: 'saw1/${{ parameters.imagename }}'
+    qualifyImageName: false

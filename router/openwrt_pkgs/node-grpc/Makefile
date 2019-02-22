@@ -48,6 +48,7 @@ define Build/Compile
 	$(MAKE_FLAGS) \
 	npm_config_arch=$(NODEJS_CPU) \
 	npm_config_target_arch=$(NODEJS_CPU) \
+	npm_config_target_libc=musl \
 	npm_config_build_from_source=true \
 	npm_config_nodedir=$(STAGING_DIR)/usr/ \
 	npm_config_prefix=$(PKG_INSTALL_DIR)/usr/ \

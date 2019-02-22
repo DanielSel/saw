@@ -31,6 +31,16 @@
             }
         },
         {
+            "name": "saw_attach_service",
+            "type": "node",
+            "request": "attach",
+            "address": "127.0.0.2",
+            "port": 9229,
+            "remoteRoot": "/etc/saw/service",
+            "localRoot": "${workspaceFolder}/router/build",
+            "outFiles": ["${workspaceFolder}/router/build/**/*.js"],
+        },
+        {
             "name": "client_all",
             "type": "node",
             "request": "launch",

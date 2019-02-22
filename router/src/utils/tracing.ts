@@ -24,6 +24,16 @@ export abstract class tracing {
             if (details) {
                 console.log("%s: (DETAILS) Object:", severity);
                 console.log(details);
+
+                if (details.responseText) {
+                    console.log("%s: (Response Text):", severity);
+                    console.log(details.responseText);
+                }
+
+                if (details.stack) {
+                    console.log("%s: (Stack Trace):", severity);
+                    console.log(details.stack);
+                }
             }
         }
     }
