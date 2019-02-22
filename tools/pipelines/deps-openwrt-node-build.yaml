@@ -1,0 +1,27 @@
+name: $(Date:yyyyMMdd)
+trigger: none
+pr: none
+
+pool:
+  vmImage: ubuntu-16.04
+steps:
+- bash: 'chmod 777 $(Build.StagingDirectory)'
+  displayName: 'Set Permissions on temporary staging directory'
+
+- task: Docker@1
+  displayName: 'Extract Node ipk Package from Docker Image'
+  inputs:
+    containerregistrytype: 'Container Registry'
+    dockerRegistryEndpoint: 'Daniel-DockerHub'
+    command: run
+    runInBackground: false
+    imageName: 'saw1/build-turris-ipkg-node:latest'
+    volumes:  |
+      $(Build.StagingDirectory):/dist
+    containerCommand: 'cp -r ./bin/packages/arm_cortex-a9_vfpv3/node/. /dist/'
+
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish ipk Files to STAGING'
+  inputs:
+    artifactName: openwrt-nodejs
+    targetPath: $(Build.StagingDirectory)
