@@ -1,0 +1,38 @@
+name: $(Date:yyyyMMdd)
+trigger: none
+pr: none
+
+variables:
+- name: TURRIS_SDK_NAME
+  value: turrisos-sdk-4.0-mvebu-cortexa9_gcc-7.3.0_musl_eabi.Linux-x86_64
+- name: TURRIS_SDK_BRANCH
+  value: omnia-hbk
+- name: TURRIS_OPENWRT_BRANCH
+  value: openwrt-18.06
+
+
+jobs:
+  - job: docker_build_turris_ipkg
+    pool:
+      vmImage: ubuntu-16.04
+    steps:
+    - template: templates/docker-build-turris.yaml
+      parameters:
+        imagename: build-turris-ipkg
+
+  - job: docker_build_turris_ipkg_node
+    timeoutInMinutes: 180
+    pool:
+      vmImage: ubuntu-16.04
+    steps:
+    - template: templates/docker-build-turris.yaml
+      parameters:
+        imagename: build-turris-ipkg-node
+
+  - job: docker_build_bintray
+    pool:
+      vmImage: ubuntu-16.04
+    steps:
+    - template: templates/docker-build.yaml
+      parameters:
+        imagename: deploy-bintray
