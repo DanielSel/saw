@@ -5,7 +5,8 @@ trigger:
     - develop
   paths:
     include:
-    - tools/dockerfiles/*
+    - tools/dockerfiles/build-turris-ipkg-node/dockerfile
+    - router/openwrt_pkgs/node/*
 pr:
   autoCancel: true
   branches:
@@ -13,7 +14,8 @@ pr:
     - develop
   paths:
     include:
-    - tools/dockerfiles/*
+    - tools/dockerfiles/build-turris-ipkg-node/dockerfile
+    - router/openwrt_pkgs/node/*
 
 variables:
 - name: TURRIS_SDK_NAME
@@ -25,14 +27,6 @@ variables:
 
 
 jobs:
-  - job: docker_build_turris_ipkg
-    pool:
-      vmImage: ubuntu-16.04
-    steps:
-    - template: templates/docker-build-turris.yaml
-      parameters:
-        imagename: build-turris-ipkg
-
   - job: docker_build_turris_ipkg_node
     timeoutInMinutes: 180
     pool:
@@ -41,11 +35,3 @@ jobs:
     - template: templates/docker-build-turris.yaml
       parameters:
         imagename: build-turris-ipkg-node
-
-  - job: docker_build_bintray
-    pool:
-      vmImage: ubuntu-16.04
-    steps:
-    - template: templates/docker-build.yaml
-      parameters:
-        imagename: deploy-bintray

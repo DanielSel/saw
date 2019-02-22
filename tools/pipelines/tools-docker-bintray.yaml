@@ -1,0 +1,26 @@
+name: $(Date:yyyyMMdd)
+trigger:
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - tools/dockerfiles/deploy-bintray/dockerfile
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - tools/dockerfiles/deploy-bintray/dockerfile
+
+
+jobs:
+  - job: docker_build_bintray
+    pool:
+      vmImage: ubuntu-16.04
+    steps:
+    - template: templates/docker-build.yaml
+      parameters:
+        imagename: deploy-bintray
