@@ -34,6 +34,7 @@ jobs:
         imagename: build-turris-ipkg
 
   - job: docker_build_turris_ipkg_node
+    timeoutInMinutes: 180
     pool:
       vmImage: ubuntu-16.04
     steps:
