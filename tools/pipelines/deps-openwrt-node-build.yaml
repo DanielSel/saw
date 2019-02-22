@@ -9,7 +9,7 @@ steps:
   displayName: 'Set Permissions on temporary staging directory'
 
 - task: Docker@1
-  displayName: 'Extract Node ipk Package from Docker Image'
+  displayName: 'Extract Node ipk Packages from Docker Image'
   inputs:
     containerregistrytype: 'Container Registry'
     dockerRegistryEndpoint: 'Daniel-DockerHub'
@@ -20,8 +20,12 @@ steps:
       $(Build.StagingDirectory):/dist
     containerCommand: 'cp -r ./bin/packages/arm_cortex-a9_vfpv3/node/. /dist/'
 
+- bash: echo "##vso[task.setvariable variable=version]$(ls node_* | awk -F'[_]' '{print substr($2,1,length($2)-2)}')"
+  workingDirectory: $(Build.StagingDirectory)
+  displayName: 'Parse Version Number from ipk Packages'
+
 - task: PublishPipelineArtifact@0
   displayName: 'Publish ipk Files to STAGING'
   inputs:
-    artifactName: openwrt-nodejs
+    artifactName: node-$(version)
     targetPath: $(Build.StagingDirectory)
