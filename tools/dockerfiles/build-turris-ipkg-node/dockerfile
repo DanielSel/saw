@@ -5,19 +5,13 @@ ENV SAW_BRANCH=master
 
 WORKDIR /home/beast
 RUN git clone --depth 1 https://github.com/DanielSel/saw.git -b ${SAW_BRANCH} \
- && find ./openwrt -mindepth 1 ! -regex '^./saw/router/openwrt_pkgs/node\(/.*\)?' -delete
+ && find ./saw -mindepth 1 ! -regex '^./saw/router\(/openwrt_pkgs\(/node\(/.*\)?\)?\)?' -delete
 
-# USER root
-# RUN apt-get update && \
-# 	apt-get -y install --no-install-recommends \
-#     zlib
-
-# USER beast
 WORKDIR /home/beast/${SDK_NAME}
 RUN echo "src-link node /home/beast/saw/router/openwrt_pkgs" >> feeds.conf.default
 RUN ./scripts/feeds update node \
  && ./scripts/feeds install -p node node
 
 RUN make defconfig \
-    && make package/node/compile V=sc \
-    && make package/node/install V=sc
+    && make -j $((`nproc`+1)) package/node/compile V=sc \
+    && make -j $((`nproc`+1)) package/node/host/compile V=sc 

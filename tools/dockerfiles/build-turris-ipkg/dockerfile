@@ -8,10 +8,10 @@ ENV SDK_NAME=turrisos-sdk-4.0-mvebu-cortexa9_gcc-7.3.0_musl_eabi.Linux-x86_64
 RUN apt-get update && \
 	apt-get -y install --no-install-recommends \
     git ca-certificates \
-    build-essential ccache python-dev \
+    build-essential ccache python-dev python3-dev \
     gcc-multilib g++-multilib \
-    libncurses-dev libpsl-dev \
-    unzip file curl wget gawk xz-utils \
+    libncurses-dev zlib1g-dev libssl-dev \
+    unzip file curl wget gawk xz-utils flex gettext \
     && apt-get clean
 
 # Needs to be "beast" because of hardcoded stuff in current SDK (bug?)
