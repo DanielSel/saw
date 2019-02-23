@@ -1,0 +1,17 @@
+FROM debian:stretch-slim
+RUN apt-get update \
+    && apt-get -y install --no-install-recommends \ 
+        curl ca-certificates gnupg \
+    && curl -sL https://deb.nodesource.com/setup_11.x | bash - \
+    && apt-get -y install --no-install-recommends \ 
+        nodejs protobuf-compiler \
+    && apt-get clean \
+    && npm i --unsafe-perm -g grpc-tools grpc_tools_node_protoc_ts
+
+WORKDIR /protobuf
+CMD protoc --plugin=protoc-gen-grpc=/usr/lib/node_modules/grpc-tools/bin/grpc_node_plugin --js_out=import_style=commonjs,binary:/dist --grpc_out=/dist -I . *.proto \
+    && protoc --plugin=protoc-gen-ts=/usr/lib/node_modules/grpc_tools_node_protoc_ts/bin/protoc-gen-ts --ts_out=/dist -I . *.proto
+
+
+VOLUME /protobuf
+VOLUME /dist
