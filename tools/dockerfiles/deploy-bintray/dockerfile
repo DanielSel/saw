@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.9
 RUN apk add --update curl && rm -rf /var/cache/apk/*
 
 # ENV BINTRAY_CREDENTIALS
@@ -8,7 +8,7 @@ RUN apk add --update curl && rm -rf /var/cache/apk/*
 # ENV PKG_VERSION
 
 WORKDIR /deploy
-CMD for FILE in /deploy/*; do curl -T $FILE -u${BINTRAY_CREDENTIALS} https://api.bintray.com/content/${BINTRAY_REPO}/${PKG_NAME}/${PKG_VERSION}/$FILE?override=1; done \
+CMD for FILE in *; do curl -T $FILE -u${BINTRAY_CREDENTIALS} https://api.bintray.com/content/${BINTRAY_REPO}/${PKG_NAME}/${PKG_VERSION}/$FILE?override=1; done \
     && curl -X POST -u${BINTRAY_CREDENTIALS} https://api.bintray.com/content/${BINTRAY_REPO}/${PKG_NAME}/${PKG_VERSION}/publish
 
 VOLUME /deploy
