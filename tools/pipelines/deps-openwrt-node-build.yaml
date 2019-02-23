@@ -1,9 +1,13 @@
 name: $(Date:yyyyMMdd)
 trigger: none
 pr: none
-
 pool:
   vmImage: ubuntu-16.04
+
+variables:
+- group: env-prod
+- group: bintray-credentials-ds
+
 steps:
 - bash: 'chmod 777 $(Build.StagingDirectory)'
   displayName: 'Set Permissions on temporary staging directory'
@@ -24,8 +28,18 @@ steps:
   workingDirectory: $(Build.StagingDirectory)
   displayName: 'Parse Version Number from ipk Packages'
 
-- task: PublishPipelineArtifact@0
-  displayName: 'Publish ipk Files to STAGING'
+- task: Docker@1
+  displayName: 'Publish ipk Files to Bintray opkg Repository'
   inputs:
-    artifactName: node-$(version)
-    targetPath: $(Build.StagingDirectory)
+    containerregistrytype: 'Container Registry'
+    dockerRegistryEndpoint: 'Daniel-DockerHub'
+    command: run
+    runInBackground: false
+    imageName: 'saw1/deploy-bintray:latest'
+    volumes:  |
+      $(Build.StagingDirectory):/deploy
+    envVars: |
+      BINTRAY_CREDENTIALS=$(BINTRAY_CREDENTIALS)
+      BINTRAY_REPO=$(BINTRAY_REPO_OPENWRT)
+      PKG_NAME=node
+      PKG_VERSION=$(version)
