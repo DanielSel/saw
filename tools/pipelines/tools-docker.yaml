@@ -29,6 +29,14 @@ jobs:
       parameters:
         imagename: build-turris-ipkg-node
 
+  - job: docker_build_protobuf
+    pool:
+      vmImage: ubuntu-16.04
+    steps:
+    - template: templates/docker-build.yaml
+      parameters:
+        imagename: build-protobuf
+
   - job: docker_build_bintray
     pool:
       vmImage: ubuntu-16.04
