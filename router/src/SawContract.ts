@@ -168,7 +168,7 @@ export class SawContract {
             return null;
         }
 
-        const address = contractInfo.address ? contractInfo.address : contractAddress;
+        const address = contractAddress ? contractAddress : contractInfo.address;
         if (!address) {
             tracing.log("ERROR", "Contract JSON does not contain address and SAW_CONTRACT_ADDRESS not set");
             tracing.log("DEBUG", "JSON Object", contractInfo);
