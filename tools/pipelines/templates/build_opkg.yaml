@@ -1,0 +1,21 @@
+parameters:
+  pkgName: ''
+  imageName: 'saw1/build-turris-ipkg:latest'
+
+steps:
+- bash: 'chmod 777 $(Build.StagingDirectory)'
+  displayName: 'Set Permissions on temporary staging directory'
+
+- task: Docker@1
+  displayName: 'Build opkg Package'
+  inputs:
+    containerregistrytype: 'Container Registry'
+    dockerRegistryEndpoint: 'Daniel-DockerHub'
+    command: run
+    runInBackground: false
+    imageName: ${{ parameters.imageName }}
+    volumes:  |
+      $(Build.SourcesDirectory)/router/openwrt_pkgs:/pkgs
+      $(Build.StagingDirectory):/dist
+    envVars: |
+      PKG_NAME=${{ parameters.pkgName }}
