@@ -1,3 +1,5 @@
+import {readdirSync} from "fs";
+
 import {exec} from "shelljs";
 
 import {tracing} from "./utils/tracing";
@@ -26,6 +28,7 @@ export class SessionManager {
     // TODO: Enforce stuff (mac address format, etc.)?
     private sessions: Map<string, ISession>;
     private finishedSessions: Map<number, IFinishedSession>;
+    private wifiIfaces?: string[];
 
     constructor(sessionInactivityThreshold: number, debugMode?: string) {
         tracing.log("SILLY", "SessionManager.constructor called.");
@@ -34,6 +37,13 @@ export class SessionManager {
 
         this.sessions = new Map<string, ISession>();
         this.finishedSessions = new Map<number, IFinishedSession>();
+
+        // Don't try to hostapd_cli when debugging in IDE
+        if (this.debugMode && this.debugMode.includes("VSC")) {
+            tracing.log("DEBUG", "Running on real device.");
+            this.wifiIfaces = readdirSync("/var/run/hostapd");
+            tracing.log("DEBUG", `Found Wifi Interfaces: ${this.wifiIfaces}`);
+        }
     }
 
     public addSession(ethAddress: string, newSession: ISession) {
@@ -104,16 +114,20 @@ export class SessionManager {
     private disassociateClient(ethAddr: string, macAddr: string) {
         tracing.log("SILLY", "SawService.disassociateClient called.");
         // Don't try to hostapd_cli when debugging in IDE
-        if (this.debugMode && this.debugMode.includes("VSC")) {
+        if (!this.wifiIfaces) {
             tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
             return;
         }
 
-        if (exec(`hostapd_cli deauthenticate ${macAddr}`).code === 0) {
+        let success: boolean = false;
+        this.wifiIfaces.forEach(iface => success = success ||
+            exec(`hostapd_cli -i ${iface} deauthenticate ${macAddr}`).code === 0);
+
+        if (success) {
             tracing.log("INFO", `Deassociated client with ETH address ${ethAddr} and MAC address ${macAddr}`);
         } else {
             // tslint:disable-next-line: max-line-length
-            tracing.log("ERRPR", `Failed to deassociate client with ETH address ${ethAddr} and MAC address ${macAddr}`);
+            tracing.log("ERROR", `Failed to deassociate client with ETH address ${ethAddr} and MAC address ${macAddr}`);
         }
     }
 
