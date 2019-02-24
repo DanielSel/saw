@@ -1,0 +1,19 @@
+name: $(Date:yyyyMMdd)
+trigger: none
+pr: none
+pool:
+  vmImage: ubuntu-16.04
+
+variables:
+- group: env-prod
+- group: bintray-credentials-ds
+
+steps:
+- template: templates/build_opkg.yaml
+  parameters:
+    pkgName: node-grpc
+    imageName: 'saw1/build-turris-ipkg-node:latest'
+
+- template: templates/publish_opkg_bintray.yaml
+  parameters:
+    pkgName: node-grpc
