@@ -1,6 +1,19 @@
 name: $(Date:yyyyMMdd)
-trigger: none
-pr: none
+trigger:
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - router/openwrt_pkgs/node-grpc/*
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - router/openwrt_pkgs/node-grpc/*
 pool:
   vmImage: ubuntu-16.04
 
