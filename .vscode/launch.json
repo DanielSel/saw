@@ -119,7 +119,7 @@
             "program": "${workspaceFolder}/clients/nodejs/src/simulations.ts",
             "outFiles": ["${workspaceFolder}/clients/nodejs/build/**/*.js"],
             "cwd": "${workspaceFolder}/clients/nodejs/build",
-            "args": ["-s", "realClient", "-l", "DEBUG", "-h", "192.168.1.1"],
+            "args": ["-s", "realClient", "-l", "DEBUG", "-h", "172.16.0.1"],
             "env": {
                 "SAW_DEBUG":  "${config:dev.saw.client.env.SAW_DEBUG}",
                 "SAW_LOG_LEVEL": "${config:dev.saw.client.env.SAW_LOG_LEVEL}",
