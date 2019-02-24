@@ -1,0 +1,71 @@
+name: $(Date:yyyyMMdd)
+trigger:
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - router/openwrt_pkgs/saw/*
+    - router/*
+    exclude:
+    - router/openwrt_pkgs/*
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - router/openwrt_pkgs/saw/*
+    - router/*
+    exclude:
+    - router/openwrt_pkgs/*
+pool:
+  vmImage: ubuntu-16.04
+
+variables:
+- group: env-prod
+- group: bintray-credentials-ds
+
+steps:
+- bash: 'mkdir -p $(Build.SourcesDirectory)/router/src/grpc && chmod 777 $(Build.SourcesDirectory)/router/src/grpc'
+  displayName: 'Create directory for generated gRPC protobuf files'
+
+- task: Docker@1
+  displayName: 'Generate gRPC Service Stubs from protobuf files'
+  inputs:
+    containerregistrytype: 'Container Registry'
+    dockerRegistryEndpoint: 'Daniel-DockerHub'
+    command: run
+    runInBackground: false
+    imageName: saw1/build-protobuf:latest
+    volumes:  |
+      $(Build.SourcesDirectory)/protobuf:/protobuf
+      $(Build.SourcesDirectory)/router/src/grpc:/dist
+
+- task: NodeTool@0
+  displayName: 'Install Node.js'
+  inputs:
+    versionSpec: '11.x' 
+    checkLatest: true
+
+- script: 'npm install'
+  displayName: 'Install NPM Packages'
+  workingDirectory: $(Build.SourcesDirectory)/router
+
+- script: tsc
+  displayName: 'Compile TypeScript Source'
+  workingDirectory: $(Build.SourcesDirectory)/router
+
+- task: CopyFiles@2
+  displayName: 'Copy package.json'
+  inputs:
+    sourceFolder: $(Build.SourcesDirectory)/router/
+    contents: 'package.json' 
+    targetFolder: $(Build.SourcesDirectory)/router/build
+
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish artifact for release pipeline'
+  inputs:
+    artifactName: saw-service
+    targetPath: $(Build.SourcesDirectory)/router/build
