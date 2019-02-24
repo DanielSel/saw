@@ -10,6 +10,7 @@ variables:
 
 steps:
 - template: templates/build_opkg.yaml
+  timeoutInMinutes: 180
   parameters:
     pkgName: node-grpc
     imageName: 'saw1/build-turris-ipkg-node:latest'
