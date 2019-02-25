@@ -1,0 +1,23 @@
+package 'saw'
+
+config saw 'user'
+    option contract_infura_token ''
+    option contract_wallet_mnemonic ''
+    option contract_network 'ropsten' # Possible Values: 'mainnet', 'ropsten'
+
+config saw 'policy'
+    option max_pop_interval 10000 # ms
+    option pop_tolerance 200 # ms
+    option min_initial_funds 10000 # gwei
+
+config saw 'main'
+    option debug 'device' # Possible Values: 'device', 'vsc', 'false'
+    option log_level 'INFO' # Possible Values: 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'VERBOSE', 'DEBUG', 'SILLY'
+    option allow_offline_operation '' # NOT RECOMMENDED! Possible Values: 'CASHOUT' (Can Check Balance, but no Checkout), 'ALL' (No Connection)
+    option shutdown_kill_timeout 5000 # ms
+    option contract_json_path '/etc/saw/saw_contract.json'
+    option contract_address ''
+    option cashout_threshold 20 # Min. number of POP's to wait until cashout
+    option cashout_interval 3600000 # (ms) Min. time to wait until cashout 
+    option session_inactivity_threshold 15000 # ms
+    option blacklist_time 60000 # ms
