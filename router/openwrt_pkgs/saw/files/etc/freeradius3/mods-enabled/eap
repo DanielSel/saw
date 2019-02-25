@@ -1,0 +1,19 @@
+eap {
+	default_eap_type = ttls
+
+	tls-config tls-common {
+		private_key_password = whatever
+		private_key_file = /etc/freeradius3/certs/server.pem
+		certificate_file = /etc/freeradius3/certs/server.pem
+		ca_file = /etc/freeradius3/certs/ca.pem
+		dh_file = /etc/freeradius3/certs/dh
+	}
+
+	ttls {
+		tls = tls-common
+		default_eap_type = pap
+		require_client_cert = no
+		virtual_server = "saw_tunnel"
+		copy_request_to_tunnel = yes
+	}
+}
