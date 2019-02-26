@@ -1,0 +1,31 @@
+parameters:
+  srcDir: ''
+  outDir: ''
+
+steps:
+- task: NodeTool@0
+  displayName: 'Install Node.js'
+  inputs:
+    versionSpec: '11.x' 
+    checkLatest: true
+
+- script: 'npm install'
+  displayName: 'Install NPM Packages'
+  workingDirectory: ${{ parameters.srcDir }}
+
+- script: tsc
+  displayName: 'Compile TypeScript Source'
+  workingDirectory: ${{ parameters.srcDir }}
+
+- task: CopyFiles@2
+  displayName: 'Copy package.json'
+  inputs:
+    sourceFolder: ${{ parameters.srcDir }}
+    contents: 'package.json' 
+    targetFolder: ${{ parameters.outDir }}
+
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish artifact for release pipeline'
+  inputs:
+    artifactName: saw-service-ts
+    targetPath: ${{ parameters.outDir }}

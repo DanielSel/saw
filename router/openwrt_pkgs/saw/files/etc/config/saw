@@ -15,7 +15,7 @@ config saw 'main'
     option log_level 'INFO' # Possible Values: 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'VERBOSE', 'DEBUG', 'SILLY'
     option allow_offline_operation '' # NOT RECOMMENDED! Possible Values: 'CASHOUT' (Can Check Balance, but no Checkout), 'ALL' (No Connection)
     option shutdown_kill_timeout 5000 # ms
-    option contract_json_path '/etc/saw/saw_contract.json'
+    option contract_json_path '/etc/saw/contract.json'
     option contract_address ''
     option cashout_threshold 20 # Min. number of POP's to wait until cashout
     option cashout_interval 3600000 # (ms) Min. time to wait until cashout 

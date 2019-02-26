@@ -1,0 +1,25 @@
+parameters:
+  protobufDir: ''
+  outDir: ''
+
+steps:
+- bash: 'mkdir -p ${{ parameters.contractsDir }} && chmod 777 ${{ parameters.contractsDir }}'
+  displayName: 'Create directory for generated gRPC protobuf files'
+
+- task: Docker@1
+  displayName: 'Generate gRPC Service Stubs from protobuf files'
+  inputs:
+    containerregistrytype: 'Container Registry'
+    dockerRegistryEndpoint: 'Daniel-DockerHub'
+    command: run
+    runInBackground: false
+    imageName: saw1/build-protobuf:latest
+    volumes:  |
+      $(Build.SourcesDirectory)/protobuf:/protobuf
+      $(Build.SourcesDirectory)/router/src/grpc:/dist
+
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish artifact for release pipeline'
+  inputs:
+    artifactName: saw-service-protobuf
+    targetPath: ${{ parameters.outDir }}
