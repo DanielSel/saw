@@ -28,6 +28,6 @@ steps:
     pkgName: node-grpc
     imageName: 'saw1/build-turris-ipkg-node:latest'
 
-- template: templates/publish_opkg_bintray.yaml
+- template: templates/publish-opkg-bintray.yaml
   parameters:
     pkgName: node-grpc
