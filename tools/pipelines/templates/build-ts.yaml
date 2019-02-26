@@ -23,9 +23,3 @@ steps:
     sourceFolder: ${{ parameters.srcDir }}
     contents: 'package.json' 
     targetFolder: ${{ parameters.outDir }}
-
-- task: PublishPipelineArtifact@0
-  displayName: 'Publish artifact for release pipeline'
-  inputs:
-    artifactName: saw-service-ts
-    targetPath: ${{ parameters.outDir }}

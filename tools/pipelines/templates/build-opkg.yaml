@@ -21,9 +21,3 @@ steps:
       ${{ parameters.outDir }}:/dist
     envVars: |
       PKG_NAME=${{ parameters.pkgName }}
-
-- task: PublishPipelineArtifact@0
-  displayName: 'Publish artifact for release pipeline'
-  inputs:
-    artifactName: saw-service-opkg
-    targetPath: ${{ parameters.outDir }}
