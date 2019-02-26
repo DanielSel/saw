@@ -3,7 +3,7 @@ parameters:
   outDir: ''
 
 steps:
-- bash: 'mkdir -p ${{ parameters.contractsDir }} && chmod 777 ${{ parameters.contractsDir }}'
+- bash: 'mkdir -p ${{ parameters.outDir }} && chmod 777 ${{ parameters.outDir }}'
   displayName: 'Create directory for generated gRPC protobuf files'
 
 - task: Docker@1
@@ -15,11 +15,5 @@ steps:
     runInBackground: false
     imageName: saw1/build-protobuf:latest
     volumes:  |
-      $(Build.SourcesDirectory)/protobuf:/protobuf
-      $(Build.SourcesDirectory)/router/src/grpc:/dist
-
-- task: PublishPipelineArtifact@0
-  displayName: 'Publish artifact for release pipeline'
-  inputs:
-    artifactName: saw-service-protobuf
-    targetPath: ${{ parameters.outDir }}
+      ${{ parameters.protobufDir }}:/protobuf
+      ${{ parameters.outDir }}:/dist

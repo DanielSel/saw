@@ -20,14 +20,8 @@ steps:
 
 - bash: >
     echo "{" > contract.json &&
-    echo "abi": ${ETHEREUM_CONTRACT_ABI} > contract.json &&
-    echo "address": ${ETHEREUM_CONTRACT_ADDRESS} > contract.json &&
-    echo "}" > contract.json
+    echo "\"abi\": ${ETHEREUM_CONTRACT_ABI}," >> contract.json &&
+    echo "\"address\": \"${ETHEREUM_CONTRACT_ADDRESS}\"" >> contract.json &&
+    echo "}" >> contract.json
   displayName: 'Assemble Smart Contract JSON'
   workingDirectory: ${{ parameters.contractsDir }}
-
-- task: PublishPipelineArtifact@0
-  displayName: 'Publish artifact for release pipeline'
-  inputs:
-    artifactName: saw-contract
-    targetPath: ${{ parameters.contractsDir }}/contract.json

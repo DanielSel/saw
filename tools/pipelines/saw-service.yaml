@@ -35,6 +35,11 @@ jobs:
     parameters:
       contractsDir: $(Build.SourcesDirectory)/smart_contracts
       contractFile: saw_contract.sol
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish artifact for release pipeline'
+    inputs:
+      artifactName: saw-contract
+      targetPath: $(Build.SourcesDirectory)/smart_contracts/contract.json
 
 - job: protoc
   displayName: 'Compile Protobuf (gRPC) definitions'
@@ -45,53 +50,58 @@ jobs:
     parameters:
       protobufDir: $(Build.SourcesDirectory)/protobuf
       outDir: $(Build.SourcesDirectory)/router/src/grpc
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish artifact for release pipeline'
+    inputs:
+      artifactName: saw-service-protobuf
+      targetPath: $(Build.SourcesDirectory)/router/src/grpc
 
-- job: saw-ts
+- job: saw_ts
   displayName: 'Compile SAW TypeScript'
   dependsOn: protoc
   condition: succeeded()
   pool:
     vmImage: ubuntu-16.04
   steps:
-  - task: DownloadPipelineArtifact@1
+  - task: DownloadPipelineArtifact@0
     inputs:
       artifactName: saw-service-protobuf
-      downloadPath: $(Build.SourcesDirectory)/router/src/grpc
+      targetPath: $(Build.SourcesDirectory)/router/src/grpc
   - template: templates/build-ts.yaml
     parameters:
       srcDir: $(Build.SourcesDirectory)/router
       outDir: $(Build.SourcesDirectory)/router/build
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish artifact for release pipeline'
+    inputs:
+      artifactName: saw-service-ts
+      targetPath: $(Build.SourcesDirectory)/router/build
 
-- job: saw-openwrt
+- job: saw_openwrt
   displayName: 'Package SAW for OpenWrt (opkg)'
   dependsOn:
   - solc
-  - saw-ts
+  - saw_ts
   condition: succeeded()
   pool:
     vmImage: ubuntu-16.04
   steps:
-  - task: DownloadPipelineArtifact@1
+  - task: DownloadPipelineArtifact@0
     inputs:
-      buildType: current
       artifactName: saw-contract
-      downloadPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw
-  
-  - task: DownloadPipelineArtifact@1
+      targetPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw
+  - task: DownloadPipelineArtifact@0
     inputs:
-      buildType: current
       artifactName: saw-service-ts
-      downloadPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw'
-
+      targetPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw'
   - bash: 'find ./openwrt_pkgs -mindepth 1 ! -regex "^./openwrt_pkgs/saw\(/.*\)?" -delete'
     displayName: 'Extract SAW openwrt source package from feed (skip building dependencies)'
     workingDirectory: $(Build.SourcesDirectory)/router
-  - template: templates/tools-docker-turris-ipkg.yaml
+  - template: templates/build-opkg.yaml
     parameters:
       srcDir:  $(Build.SourcesDirectory)/router/openwrt_pkgs
       outDir: $(Build.StagingDirectory)
       pkgName: saw
-  
   - task: PublishPipelineArtifact@0
     displayName: 'Publish artifact for release pipeline'
     inputs:
