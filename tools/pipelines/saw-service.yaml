@@ -20,80 +20,80 @@ pr:
     - router/*
     exclude:
     - router/openwrt_pkgs/*
-pool:
-  vmImage: ubuntu-16.04
 
 variables:
 - group: env-prod
 - group: bintray-credentials-ds
-- name: address
-  value: '0xb13797EF857335F9d34C083b22543fAA8dc6bbd7'
-# Workaround for bug in FileTransform Task not picking up dynamic variables
-- name: abi
-  value: 'oops... something went wrong'
 
-steps:
-- task: Docker@1
+jobs:
+- job: solc
   displayName: 'Compile Smart Contract'
-  inputs:
-    containerregistrytype: 'Container Registry'
-    dockerRegistryEndpoint: 'Daniel-DockerHub'
-    command: run
-    runInBackground: false
-    imageName: ethereum/solc:0.5.2-alpine
-    volumes:  |
-      $(Build.SourcesDirectory)/smart_contracts:/contracts
-    containerCommand: '--abi /contracts/saw_contract.sol -o /contracts'
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - template: templates/build-solc.yaml
+    parameters:
+      contractsDir: $(Build.SourcesDirectory)/smart_contracts
+      contractFile: saw_contract.sol
 
-- script: echo "##vso[task.setvariable variable=abi]$(cat $(Build.SourcesDirectory)/smart_contracts/SawWallet.abi)"
-  displayName: 'Cache generated ABI'
+- job: protoc
+  displayName: 'Compile Protobuf (gRPC) definitions'
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - template: templates/build-protoc.yaml
+    parameters:
+      protobufDir: $(Build.SourcesDirectory)/protobuf
+      outDir: $(Build.SourcesDirectory)/router/src/grpc
 
+- job: saw-ts
+  displayName: 'Compile SAW TypeScript'
+  dependsOn: protoc
+  condition: succeeded()
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - task: DownloadPipelineArtifact@1
+    inputs:
+      artifactName: saw-service-protobuf
+      downloadPath: $(Build.SourcesDirectory)/router/src/grpc
+  - template: templates/build-ts.yaml
+    parameters:
+      srcDir: $(Build.SourcesDirectory)/router
+      outDir: $(Build.SourcesDirectory)/router/build
 
-- task: FileTransform@1
-  displayName: 'Assemble Smart Contract JSON'
-  inputs:
-    fileType: json
-    folderPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw
-    targetFiles: 'saw_contract.json'
+- job: saw-openwrt
+  displayName: 'Package SAW for OpenWrt (opkg)'
+  dependsOn:
+  - solc
+  - saw-ts
+  condition: succeeded()
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - task: DownloadPipelineArtifact@1
+    inputs:
+      buildType: current
+      artifactName: saw-contract
+      downloadPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw
+  
+  - task: DownloadPipelineArtifact@1
+    inputs:
+      buildType: current
+      artifactName: saw-service-ts
+      downloadPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw'
 
-- bash: 'mkdir -p $(Build.SourcesDirectory)/router/src/grpc && chmod 777 $(Build.SourcesDirectory)/router/src/grpc'
-  displayName: 'Create directory for generated gRPC protobuf files'
-
-- task: Docker@1
-  displayName: 'Generate gRPC Service Stubs from protobuf files'
-  inputs:
-    containerregistrytype: 'Container Registry'
-    dockerRegistryEndpoint: 'Daniel-DockerHub'
-    command: run
-    runInBackground: false
-    imageName: saw1/build-protobuf:latest
-    volumes:  |
-      $(Build.SourcesDirectory)/protobuf:/protobuf
-      $(Build.SourcesDirectory)/router/src/grpc:/dist
-
-- task: NodeTool@0
-  displayName: 'Install Node.js'
-  inputs:
-    versionSpec: '11.x' 
-    checkLatest: true
-
-- script: 'npm install'
-  displayName: 'Install NPM Packages'
-  workingDirectory: $(Build.SourcesDirectory)/router
-
-- script: tsc
-  displayName: 'Compile TypeScript Source'
-  workingDirectory: $(Build.SourcesDirectory)/router
-
-- task: CopyFiles@2
-  displayName: 'Copy package.json'
-  inputs:
-    sourceFolder: $(Build.SourcesDirectory)/router/
-    contents: 'package.json' 
-    targetFolder: $(Build.SourcesDirectory)/router/build
-
-- task: PublishPipelineArtifact@0
-  displayName: 'Publish artifact for release pipeline'
-  inputs:
-    artifactName: saw-service
-    targetPath: $(Build.SourcesDirectory)/router/build
+  - bash: 'find ./openwrt_pkgs -mindepth 1 ! -regex "^./openwrt_pkgs/saw\(/.*\)?" -delete'
+    displayName: 'Extract SAW openwrt source package from feed (skip building dependencies)'
+    workingDirectory: $(Build.SourcesDirectory)/router
+  - template: templates/tools-docker-turris-ipkg.yaml
+    parameters:
+      srcDir:  $(Build.SourcesDirectory)/router/openwrt_pkgs
+      outDir: $(Build.StagingDirectory)
+      pkgName: saw
+  
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish artifact for release pipeline'
+    inputs:
+      artifactName: saw-service-opkg
+      targetPath: $(Build.StagingDirectory)

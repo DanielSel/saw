@@ -1,0 +1,33 @@
+parameters:
+  contractsDir: ''
+  contractFile: ''
+
+steps:
+- task: Docker@1
+  displayName: 'Compile Smart Contract'
+  inputs:
+    containerregistrytype: 'Container Registry'
+    dockerRegistryEndpoint: 'Daniel-DockerHub'
+    command: run
+    runInBackground: false
+    imageName: ethereum/solc:0.5.2-alpine
+    volumes:  |
+      ${{ parameters.contractsDir }}:/contracts
+    containerCommand: '--abi /contracts/${{ parameters.contractFile }} -o /contracts'
+
+- script: echo "##vso[task.setvariable variable=ETHEREUM_CONTRACT_ABI]$(cat $(Build.SourcesDirectory)/smart_contracts/SawWallet.abi)"
+  displayName: 'Cache generated ABI'
+
+- bash: >
+    echo "{" > contract.json &&
+    echo "abi": ${ETHEREUM_CONTRACT_ABI} > contract.json &&
+    echo "address": ${ETHEREUM_CONTRACT_ADDRESS} > contract.json &&
+    echo "}" > contract.json
+  displayName: 'Assemble Smart Contract JSON'
+  workingDirectory: ${{ parameters.contractsDir }}
+
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish artifact for release pipeline'
+  inputs:
+    artifactName: saw-contract
+    targetPath: ${{ parameters.contractsDir }}/contract.json

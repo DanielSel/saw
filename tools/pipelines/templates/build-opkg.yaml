@@ -1,9 +1,11 @@
 parameters:
+  srcDir: ''
+  outDir: ''
   pkgName: ''
   imageName: 'saw1/build-turris-ipkg:latest'
 
 steps:
-- bash: 'chmod 777 $(Build.StagingDirectory)'
+- bash: 'chmod 777 ${{ parameters.outDir }}'
   displayName: 'Set Permissions on temporary staging directory'
 
 - task: Docker@1
@@ -15,7 +17,13 @@ steps:
     runInBackground: false
     imageName: ${{ parameters.imageName }}
     volumes:  |
-      $(Build.SourcesDirectory)/router/openwrt_pkgs:/pkgs
-      $(Build.StagingDirectory):/dist
+      ${{ parameters.srcDir }}:/pkgs
+      ${{ parameters.outDir }}:/dist
     envVars: |
       PKG_NAME=${{ parameters.pkgName }}
+
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish artifact for release pipeline'
+  inputs:
+    artifactName: saw-service-opkg
+    targetPath: ${{ parameters.outDir }}
