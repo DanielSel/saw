@@ -16,15 +16,18 @@ pr:
     - router/openwrt_pkgs/node-grpc/*
 pool:
   vmImage: ubuntu-16.04
+  timeoutInMinutes: 180
+
 
 variables:
 - group: env-prod
 - group: bintray-credentials-ds
 
 steps:
-- template: templates/build_opkg.yaml
-  timeoutInMinutes: 180
+- template: templates/build-opkg.yaml
   parameters:
+    srcDir:  $(Build.SourcesDirectory)/router/openwrt_pkgs
+    outDir: $(Build.StagingDirectory)
     pkgName: node-grpc
     imageName: 'saw1/build-turris-ipkg-node:latest'
 
