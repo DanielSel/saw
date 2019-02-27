@@ -102,6 +102,7 @@ jobs:
       srcDir:  $(Build.SourcesDirectory)/router/openwrt_pkgs
       outDir: $(Build.StagingDirectory)
       pkgName: saw
+      skipUpdate: true
   - task: PublishPipelineArtifact@0
     displayName: 'Publish artifact for release pipeline'
     inputs:
