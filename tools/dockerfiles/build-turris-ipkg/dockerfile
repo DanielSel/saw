@@ -33,7 +33,7 @@ RUN echo "src-link custom /pkgs" >> feeds.conf.default
 
 # ENV SKIP_UPDATE (optional to remove system pkgs from cache)
 # ENV PKG_NAME
-CMD if [[ -z "${SKIP_UPDATE}" ]]; then ./scripts/feeds clean; fi  \
+CMD if [ ${SKIP_UPDATE} = "true" ]; then ./scripts/feeds clean; fi  \
     && ./scripts/feeds update custom \
     && ./scripts/feeds install -p custom ${PKG_NAME} \
     && make defconfig \
