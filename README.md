@@ -1,4 +1,7 @@
 # Smart Autonomous Wifi
+[![Build Status](https://dev.azure.com/danielsel/saw/_apis/build/status/saw-service?branchName=develop)](https://dev.azure.com/danielsel/saw/_build/latest?definitionId=11&branchName=develop)
+
+
 ## Idea
 Wifi Network spanned by autonomous routers providing service to everyone with payment secured by an Ethereum Smart Contract.
 

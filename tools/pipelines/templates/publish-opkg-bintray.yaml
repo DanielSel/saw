@@ -1,9 +1,10 @@
 parameters:
   pkgName: ''
+  pkgDir: '$(Build.StagingDirectory)'
 
 steps:
 - bash: echo "##vso[task.setvariable variable=pkg_version]$(ls ${{ parameters.pkgName }}_*.ipk | awk -F'[_]' '{print substr($2,1,length($2)-2)}')"
-  workingDirectory: $(Build.StagingDirectory)
+  workingDirectory: ${{ parameters.pkgDir }}
   displayName: 'Parse Version Number from ipk Packages'
 
 - task: Docker@1
@@ -15,7 +16,7 @@ steps:
     runInBackground: false
     imageName: 'saw1/deploy-bintray:latest'
     volumes:  |
-      $(Build.StagingDirectory):/deploy
+      ${{ parameters.pkgDir }}:/deploy
     envVars: |
       BINTRAY_CREDENTIALS=$(BINTRAY_CREDENTIALS)
       BINTRAY_REPO=$(BINTRAY_REPO_OPENWRT)
