@@ -3,6 +3,7 @@ parameters:
   outDir: ''
   pkgName: ''
   imageName: 'saw1/build-turris-ipkg:latest'
+  skipUpdate: false
 
 steps:
 - bash: 'chmod 777 ${{ parameters.outDir }}'
@@ -21,3 +22,5 @@ steps:
       ${{ parameters.outDir }}:/dist
     envVars: |
       PKG_NAME=${{ parameters.pkgName }}
+      ${{ if eq(parameters.skipUpdate, 'true') }}:
+        SKIP_UPDATE=YES
