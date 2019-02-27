@@ -5,6 +5,8 @@ trigger:
     - develop
   paths:
     include:
+    - smart_contracts/*
+    - protobuf/*
     - router/openwrt_pkgs/saw/*
     - router/*
     exclude:
@@ -16,6 +18,8 @@ pr:
     - develop
   paths:
     include:
+    - smart_contracts/*
+    - protobuf/*
     - router/openwrt_pkgs/saw/*
     - router/*
     exclude:
@@ -57,7 +61,7 @@ jobs:
       targetPath: $(Build.SourcesDirectory)/router/src/grpc
 
 - job: saw_ts
-  displayName: 'Compile SAW TypeScript'
+  displayName: 'Compile TypeScript'
   dependsOn: protoc
   condition: succeeded()
   pool:
@@ -78,7 +82,7 @@ jobs:
       targetPath: $(Build.SourcesDirectory)/router/build
 
 - job: saw_openwrt
-  displayName: 'Package SAW for OpenWrt (opkg)'
+  displayName: 'Package and Deploy for OpenWrt (opkg)'
   dependsOn:
   - solc
   - saw_ts
@@ -87,13 +91,15 @@ jobs:
     vmImage: ubuntu-16.04
   steps:
   - task: DownloadPipelineArtifact@0
+    displayName: 'Retrieve Smart Contract'
     inputs:
       artifactName: saw-contract
       targetPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw
   - task: DownloadPipelineArtifact@0
+    displayName: 'Retrieve SAW Service'
     inputs:
       artifactName: saw-service-ts
-      targetPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw'
+      targetPath: $(Build.SourcesDirectory)/router/openwrt_pkgs/saw/files/etc/saw
   - bash: 'find ./openwrt_pkgs -mindepth 1 ! -regex "^./openwrt_pkgs/saw\(/.*\)?" -delete'
     displayName: 'Extract SAW openwrt source package from feed (skip building dependencies)'
     workingDirectory: $(Build.SourcesDirectory)/router
@@ -107,4 +113,8 @@ jobs:
     displayName: 'Publish artifact for release pipeline'
     inputs:
       artifactName: saw-service-opkg
-      targetPath: $(Build.StagingDirectory)
+      targetPath: $(Build.StagingDirectory)/custom
+  - template: templates/publish-opkg-bintray.yaml
+    parameters:
+      pkgName: saw
+      pkgDir: $(Build.StagingDirectory)/custom
