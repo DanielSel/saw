@@ -109,6 +109,8 @@ jobs:
       outDir: $(Build.StagingDirectory)
       pkgName: saw
       skipUpdate: true
+  - bash: 'sed -i "/\"grpc\""/d $(Build.SourcesDirectory)/router/package.json'
+    displayName: Remove precompiled dependencies from NPM package definition
   - task: PublishPipelineArtifact@0
     displayName: 'Publish artifact for release pipeline'
     inputs:
