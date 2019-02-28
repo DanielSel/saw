@@ -23,7 +23,7 @@ endef
 
 define Package/saw/install
 	$(INSTALL_DIR) $(1)/etc/saw
-	$(INSTALL_DATA) -r ./files/etc/saw/* $(1)/etc/saw/
+	cp -r ./files/etc/saw/* $(1)/etc/saw/
 	$(INSTALL_DIR) $(1)/etc/freeradius3
 	$(INSTALL_DIR) $(1)/etc/freeradius3/mods-enabled
 	$(INSTALL_DATA) ./files/etc/freeradius3/mods-enabled/* $(1)/etc/freeradius3/mods-enabled/
