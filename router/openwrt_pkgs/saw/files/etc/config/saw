@@ -3,6 +3,7 @@ package 'saw'
 config saw 'user'
     option contract_infura_token ''
     option contract_wallet_mnemonic ''
+    option contract_wallet_privatekey ''
     option contract_network 'ropsten' # Possible Values: 'mainnet', 'ropsten'
 
 config saw 'policy'
