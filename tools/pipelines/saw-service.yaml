@@ -26,7 +26,7 @@ pr:
     - router/openwrt_pkgs/*
 
 variables:
-- group: env-prod
+- group: env-dev
 - group: bintray-credentials-ds
 
 jobs:
