@@ -39,6 +39,9 @@ endef
 
 NODEJS_CPU:=$(subst powerpc,ppc,$(subst aarch64,arm64,$(subst x86_64,x64,$(subst i386,ia32,$(ARCH)))))
 
+TARGET_CFLAGS+= -Wno-error=maybe-uninitialized
+TARGET_CXXFLAGS+= Wno-error=maybe-uninitialized
+
 define Build/Prepare
 	$(INSTALL_DIR) $(PKG_BUILD_DIR)
 endef

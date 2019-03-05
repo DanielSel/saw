@@ -46,8 +46,8 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
         echo "Installing NPM Packages for SAW"
         cd /etc/saw && npm install
 		echo "Disabling default freeradius3 configs"
-		rm /etc/freeradius3/sites-enabled/default
-		rm /etc/freeradius3/sites-enabled/inner-tunnel
+		rm /etc/freeradius3/sites-enabled/default || echo "/etc/freeradius3/sites-enabled/default already disabled."
+		rm /etc/freeradius3/sites-enabled/inner-tunnel || echo "/etc/freeradius3/sites-enabled/inner-tunnel already disabled."
         echo "Enabling rc.d symlink for SAW"
         /etc/init.d/saw enable
 fi
