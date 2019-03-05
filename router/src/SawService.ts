@@ -2,8 +2,6 @@
 // * Write cashout store to file on flush and load on startup
 // * Write active sessions to file and flush to cashout store on startup
 // * More Machine Interpretable Errors: Accumulated Time too low, POP Timeout (with values indicating how to fix)
-// * Externalize Configurations (Environment Variables?)
-// * Externalize Smart Contract Definitions
 
 // Imports
 import {sendUnaryData, Server, ServerCredentials, ServerUnaryCall} from "grpc";

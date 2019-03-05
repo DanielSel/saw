@@ -44,14 +44,14 @@ start_service() {
     # Required Config
     procd_set_param env \
     SAW_CONTRACT_INFURA_TOKEN=$contract_infura_token \
-    SAW_CONTRACT_WALLET_MNEMONIC=$contract_wallet_mnemonic \
+    SAW_CONTRACT_WALLET_MNEMONIC="$contract_wallet_mnemonic" \
     SAW_CONTRACT_WALLET_PRIVATEKEY=$contract_wallet_privatekey \
     SAW_CONTRACT_NETWORK=$contract_network \
     SAW_DEBUG=$debug \
     SAW_LOG_LEVEL=$log_level \
     SAW_ALLOW_OFFLINE_OPERATION=$allow_offline_operation \
     SAW_SHUTDOWN_KILL_TIMEOUT=$shutdown_kill_timeout \
-    SAW_CONTRACT_JSON_PATH=$contract_json_path \
+    SAW_CONTRACT_JSON_PATH="$contract_json_path" \
     SAW_CONTRACT_ADDRESS=$contract_address \
     SAW_CASHOUT_THRESHOLD=$cashout_threshold \
     SAW_CASHOUT_INTERVAL=$cashout_interval \

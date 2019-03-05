@@ -103,14 +103,14 @@ jobs:
   - bash: 'find ./openwrt_pkgs -mindepth 1 ! -regex "^./openwrt_pkgs/saw\(/.*\)?" -delete'
     displayName: 'Extract SAW openwrt source package from feed (skip building dependencies)'
     workingDirectory: $(Build.SourcesDirectory)/router
+  - bash: 'sed -i "/\"grpc\""/d $(Build.SourcesDirectory)/router/package.json'
+    displayName: Remove precompiled dependencies from NPM package definition
   - template: templates/build-opkg.yaml
     parameters:
       srcDir:  $(Build.SourcesDirectory)/router/openwrt_pkgs
       outDir: $(Build.StagingDirectory)
       pkgName: saw
       skipUpdate: true
-  - bash: 'sed -i "/\"grpc\""/d $(Build.SourcesDirectory)/router/package.json'
-    displayName: Remove precompiled dependencies from NPM package definition
   - task: PublishPipelineArtifact@0
     displayName: 'Publish artifact for release pipeline'
     inputs:
