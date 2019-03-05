@@ -44,12 +44,19 @@ define Package/saw/postinst
 # check if we are on real system
 if [ -z "$${IPKG_INSTROOT}" ]; then
         echo "Installing NPM Packages for SAW"
+		sed -i "/\"grpc\""/d /etc/saw/package.json
         cd /etc/saw && npm install
-		echo "Disabling default freeradius3 configs"
+		echo "Disabling default FreeRADIUS configs"
 		rm /etc/freeradius3/sites-enabled/default || echo "/etc/freeradius3/sites-enabled/default already disabled."
 		rm /etc/freeradius3/sites-enabled/inner-tunnel || echo "/etc/freeradius3/sites-enabled/inner-tunnel already disabled."
         echo "Enabling rc.d symlink for SAW"
         /etc/init.d/saw enable
+		echo "Enabling rc.d symlink for FreeRADIUS"
+        /etc/init.d/radiusd enable
+		echo "Starting SAW..."
+        /etc/init.d/saw start
+		echo "Starting FreeRADIUS.."
+        /etc/init.d/radiusd start
 fi
 exit 0
 endef
@@ -58,8 +65,14 @@ define Package/saw/prerm
 #!/bin/sh
 # check if we are on real system
 if [ -z "$${IPKG_INSTROOT}" ]; then
+		echo "Stopping FreeRADIUS..."
+        /etc/init.d/radiusd stop
+        echo "Stopping SAW..."
+        /etc/init.d/saw stop
         echo "Removing rc.d symlink for SAW"
         /etc/init.d/saw disable
+		echo "Removing rc.d symlink for FreeRADIUS"
+        /etc/init.d/radiusd disable
 fi
 exit 0
 endef
