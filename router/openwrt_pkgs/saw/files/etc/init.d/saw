@@ -10,6 +10,7 @@ start_service() {
 
     config_get contract_infura_token user contract_infura_token
     config_get contract_wallet_mnemonic user contract_wallet_mnemonic
+    config_get contract_wallet_privatekey user contract_wallet_privatekey
     config_get contract_network user contract_network
 
     config_get debug main debug
@@ -41,29 +42,24 @@ start_service() {
     
 
     # Required Config
-    procd_set_param env SAW_CONTRACT_INFURA_TOKEN=$contract_infura_token
-    procd_set_param env SAW_CONTRACT_WALLET_MNEMONIC=$contract_wallet_mnemonic
-    procd_set_param env SAW_CONTRACT_NETWORK=$contract_network
-    
-
-    # Customization
-    procd_set_param env SAW_DEBUG=$debug
-    procd_set_param env SAW_LOG_LEVEL=$log_level
-    procd_set_param env SAW_ALLOW_OFFLINE_OPERATION=$allow_offline_operation
-    procd_set_param env SAW_SHUTDOWN_KILL_TIMEOUT=$shutdown_kill_timeout
-
-    procd_set_param env SAW_CONTRACT_JSON_PATH=$contract_json_path
-    procd_set_param env SAW_CONTRACT_ADDRESS=$contract_address
-
-    procd_set_param env SAW_CASHOUT_THRESHOLD=$cashout_threshold
-    procd_set_param env SAW_CASHOUT_INTERVAL=$cashout_interval
-    procd_set_param env SAW_SESSION_INACTIVITY_THRESHOLD=$session_inactivity_threshold
-    procd_set_param env SAW_BLACKLIST_TIME=$blacklist_time
-
-    # Admission Policy
-    procd_set_param env SAW_MAX_POP_INTERVAL=$max_pop_interval
-    procd_set_param env SAW_POP_TOLERANCE=$pop_tolerance
-    procd_set_param env SAW_MIN_INITIAL_FUNDS=$min_initial_funds
+    procd_set_param env \
+    SAW_CONTRACT_INFURA_TOKEN=$contract_infura_token \
+    SAW_CONTRACT_WALLET_MNEMONIC=$contract_wallet_mnemonic \
+    SAW_CONTRACT_WALLET_PRIVATEKEY=$contract_wallet_privatekey \
+    SAW_CONTRACT_NETWORK=$contract_network \
+    SAW_DEBUG=$debug \
+    SAW_LOG_LEVEL=$log_level \
+    SAW_ALLOW_OFFLINE_OPERATION=$allow_offline_operation \
+    SAW_SHUTDOWN_KILL_TIMEOUT=$shutdown_kill_timeout \
+    SAW_CONTRACT_JSON_PATH=$contract_json_path \
+    SAW_CONTRACT_ADDRESS=$contract_address \
+    SAW_CASHOUT_THRESHOLD=$cashout_threshold \
+    SAW_CASHOUT_INTERVAL=$cashout_interval \
+    SAW_SESSION_INACTIVITY_THRESHOLD=$session_inactivity_threshold \
+    SAW_BLACKLIST_TIME=$blacklist_time \
+    SAW_MAX_POP_INTERVAL=$max_pop_interval \
+    SAW_POP_TOLERANCE=$pop_tolerance \
+    SAW_MIN_INITIAL_FUNDS=$min_initial_funds
 
     procd_close_instance
 }
