@@ -12,6 +12,8 @@ const mac = process.env["Calling-Station-Id"];
 
 if (!user || !pw || !mac) {
     // RADIUS "Invalid User Configuration Entry"
+    console.log("Invalid User Configuration Entry");
+    console.log("User: %s, Password: %s, MAC Address: %s", user, pw, mac);
     process.exit(5);
 }
 
@@ -23,8 +25,11 @@ authRequest.setPassword(pw!);
 authRequest.setMacaddress(mac!);
 
 authClient.authUser(authRequest, (error, response) => {
+    console.log("User: %s, Password: %s, MAC Address: %s", user, pw, mac);
     if (error) {
         // RADIUS "Auth module failed"
+        console.log("Auth module failed");
+        console.log(error);
         process.exit(2);
     }
 
@@ -36,16 +41,22 @@ authClient.authUser(authRequest, (error, response) => {
     if (response.getState() === AuthStatusCode.POLICY_REJECT
      || response.getState() === AuthStatusCode.EMPTY_ACCOUNT) {
         // RADIUS "User rejected"
+        console.log("User rejected");
+        console.log("Rejection Message: %s", response.getMsg());
         process.exit(1);
     }
 
     if (response.getState() === AuthStatusCode.INVALID_SIGNATURE) {
         // RADIUS "User not found"
+        console.log("User not found (Invalid Signature)");
+        console.log("Message: %s", response.getMsg());
         process.exit(7);
     }
 
     if (response.getState() === AuthStatusCode.BLACKLISTED) {
         // RADIUS "User locked out"
+        console.log("User Blacklisted");
+        console.log("Message: %s", response.getMsg());
         process.exit(6);
     }
 
