@@ -36,7 +36,7 @@
             "request": "attach",
             "address": "127.0.0.2",
             "port": 9229,
-            "remoteRoot": "/etc/saw/service",
+            "remoteRoot": "/etc/saw",
             "localRoot": "${workspaceFolder}/router/build",
             "outFiles": ["${workspaceFolder}/router/build/**/*.js"],
         },
