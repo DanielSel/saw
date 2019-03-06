@@ -39,7 +39,7 @@ export class SessionManager {
         this.finishedSessions = new Map<number, IFinishedSession>();
 
         // Don't try to hostapd_cli when debugging in IDE
-        if (this.debugMode && this.debugMode.includes("VSC")) {
+        if (!this.debugMode || !this.debugMode.includes("VSC")) {
             tracing.log("DEBUG", "Running on real device.");
             this.wifiIfaces = readdirSync("/var/run/hostapd");
             tracing.log("DEBUG", `Found Wifi Interfaces: ${this.wifiIfaces}`);

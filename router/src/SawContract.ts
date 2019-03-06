@@ -125,7 +125,7 @@ export class SawContract {
                 const signature = splitSignature(pop.signature);
                 const tx = await this.contract!.payoutSinglePop(sessionId, pop.accTime,
                     signature.v, signature.r, signature.s,
-                    {gasLimit: 4600000, nonce: txCount++}) as ContractTransaction;
+                    {gasLimit: 4600000, nonce: ++txCount}) as ContractTransaction;
                 const tr = await tx.wait();
                 if (tr.status) {
                     finishedSessionMap.delete(sessionId);
