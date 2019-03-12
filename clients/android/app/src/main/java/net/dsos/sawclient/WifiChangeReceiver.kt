@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.net.NetworkInfo
+import android.os.Build
 import android.util.Log
 
 
@@ -17,8 +18,13 @@ abstract class WifiChangeReceiver : BroadcastReceiver() {
                 val wifiInfo = intent.getParcelableExtra<WifiInfo>(WifiManager.EXTRA_WIFI_INFO);
                 updateView(wifiInfo.ssid, wifiInfo.bssid);
 
+                val serviceIntent = Intent(context, PopService::class.java);
                 if(wifiInfo.ssid == "SAW") {
-
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                        context!!.startForegroundService(serviceIntent);
+//                    } else {
+//                        context!!.startService(serviceIntent);
+//                    }
                 }
             }
         } else if (intent?.action == WifiManager.WIFI_STATE_CHANGED_ACTION) {
