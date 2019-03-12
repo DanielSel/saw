@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">SAW Client</string>
+    <!-- ACTIVITY "ACCOUNT" -->
+    <string name="prompt_mnemonic">Ethereum Wallet Mnemonic</string>
+    <string name="action_save">Save Wallet</string>
+    <string name="action_save_short">Save</string>
+    <string name="error_invalid_mnemonic">Not a valid Ethereum Mnemonic Phrase</string>
+    <string name="text_status_idle">Doing Nothing</string>
+    <string name="text_status_popping">Executing SAW Protocol</string>
+    <string name="text_disconnected">Disconnected</string>
+    <string name="label_ssid">SSID:</string>
+    <string name="label_bssid">BSSID:</string>
+</resources>
