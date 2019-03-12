@@ -1,8 +1,10 @@
 package net.dsos.sawclient
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.content.IntentFilter
+import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -27,5 +29,13 @@ class MainActivity() : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         registerReceiver(this.wifiChangeReceiver, this.wifiChangeFilter);
+
+        if(resources.getBoolean(R.bool.DEBUG)){
+            main_btn_debugview.visibility = View.VISIBLE;
+        }
+    }
+
+    public fun openDebugView(view: View) {
+        startActivity(Intent(this, DebugActivity::class.java));
     }
 }

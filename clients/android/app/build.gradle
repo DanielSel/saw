@@ -5,6 +5,14 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
+    signingConfigs {
+        dsos_android_dev {
+            keyAlias 'dsos-android-dev'
+            keyPassword 'dsosdev'
+            storeFile file('C:/Users/Daniel/Documents/Keys/dsos-android-dev.jks')
+            storePassword 'dsosdev'
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "net.dsos.sawclient"
@@ -16,15 +24,21 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue "bool", "DEBUG", "false"
+            signingConfig signingConfigs.dsos_android_dev
+        }
+        debug {
+            debuggable true
+            resValue "bool", "DEBUG", "true"
         }
     }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     testImplementation 'junit:junit:4.12'
