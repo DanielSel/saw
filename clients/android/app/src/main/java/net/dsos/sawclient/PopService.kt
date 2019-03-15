@@ -56,6 +56,10 @@ class PopService : Service() {
 
     }
 
+    private fun newSession() {
+
+    }
+
     private fun sendPop() {
 
     }
