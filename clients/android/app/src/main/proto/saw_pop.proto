@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package saw;
+option java_package = "net.dsos.sawclient";
+
+service SawPop {
+    rpc newSession (SessionIdRequest) returns (SessionIdResponse);
+    rpc submitPop(Pop) returns (PopStatus);
+}
+
+
+message Pop {
+    fixed64 sessionHash = 1;
+    uint32 acc_time = 2;
+    string signature = 3;
+}
+
+message PopStatus {
+    PopStatusCode state = 1;
+    string msg = 2;
+}
+
+message SessionIdRequest {
+    string eth_address = 1;
+    string signature = 2;
+}
+
+message SessionIdResponse {
+    fixed64 sessionHash = 1;
+    PopStatus success = 2;
+}
+
+enum PopStatusCode {
+    POP_OK = 0;
+    POP_TIMEOUT = 1;
+    POP_INVALID = 2;
+    POP_CONNECTION_ERROR = 3;
+    POP_NO_CLUE_WHATS_WRONG = 4;
+}
