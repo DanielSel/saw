@@ -11,13 +11,16 @@ import android.util.Log
 import org.kethereum.crypto.*
 import org.kethereum.keccakshortcut.keccak
 
-val DEFAULT_MNEMONIC = ""
+val DEFAULT_MNEMONIC = "bulb ask truly venue battle plunge sad ostrich fan piano battle notable"
 class SawGrpcClient(mnemonic: String = DEFAULT_MNEMONIC) {
 
 
-    private val popClient: SawPopBlockingStub;
-    private val accountEKey: ExtendedKey;
-    private lateinit var sessionId: String;
+    private val popClient: SawPopBlockingStub
+    private val accountEKey: ExtendedKey
+
+    private var sessionId: Long? = null
+    private var prevPopTime: Long? = null
+    private var accTime: Long? = null
 
     init {
 
@@ -30,11 +33,39 @@ class SawGrpcClient(mnemonic: String = DEFAULT_MNEMONIC) {
         accountEKey = mnemonicWords.toKey("m/44'/60'/0'/0/0");
     }
 
+    fun test() {
+        // Call this every 10s
+        Log.d("SawGrpcClient", "Called at: " + System.currentTimeMillis())
+    }
+
     fun newSession() {
+        val request = SessionIdRequest.newBuilder()
+            .setEthAddress(getAddress())
+            .setSignature(getSignedAddress())
+            .build()
+
+        prevPopTime = System.currentTimeMillis()
+        accTime = 0
+        sessionId = popClient.newSession(request).sessionHash
     }
 
     fun sendPop() {
+        if (sessionId == null || prevPopTime == null) {
+            throw Exception("Trying to send POP without active Session. Request newSession() first.")
+        }
 
+        val now = System.currentTimeMillis()
+        accTime = accTime!! + now - prevPopTime!!
+        prevPopTime = now
+
+        val signature = signMessage(sessionId!! + accTime!!)
+        val request = SawPopOuterClass.Pop.newBuilder()
+            .setSessionHash(sessionId!!)
+            .setAccTime(accTime!!.toInt())
+            .setSignature(signature)
+            .build()
+
+        val status = popClient.submitPop(request)
     }
 
     private fun getAddress(): String {
@@ -46,8 +77,8 @@ class SawGrpcClient(mnemonic: String = DEFAULT_MNEMONIC) {
         return signMessage(address)
     }
 
-    private fun signMessage(number: Int): String {
-        var hexString = Integer.toHexString(number)
+    private fun signMessage(number: Long): String {
+        var hexString = java.lang.Long.toHexString(number)
 
         // Pad the hex string until required size (16)
         hexString = "0".repeat(16 - hexString.length) + hexString
