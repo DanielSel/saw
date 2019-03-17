@@ -24,11 +24,11 @@ export class SawService {
     // Service Configuration
     private static DEBUG = process.env.SAW_DEBUG;
     private static LOG_LEVEL = process.env.SAW_LOG_LEVEL ? process.env.SAW_LOG_LEVEL : "INFO";
-    private static SHUTDOWN_KILL_TIMEOUT = process.env.SAW_SHUTDOWN_KILL_TIMEOUT ? process.env.SAW_SHUTDOWN_KILL_TIMEOUT as unknown as number : 5000; // ms
-    private static SESSION_INACTIVITY_THRESHOLD = process.env.SAW_SESSION_INACTIVITY_THRESHOLD ? process.env.SAW_SESSION_INACTIVITY_THRESHOLD as unknown as number : 15000; // ms
-    private static CASHOUT_INTERVAL = process.env.SAW_CASHOUT_INTERVAL ? process.env.SAW_CASHOUT_INTERVAL as unknown as number : 30000; // 3600; // ms
-    private static CASHOUT_THRESHOLD = process.env.SAW_CASHOUT_THRESHOLD ? process.env.SAW_CASHOUT_THRESHOLD as unknown as number : 1; // 20; // min. num. of POP's for cashout to happen
-    private static BLACKLIST_TIME = process.env.SAW_BLACKLIST_TIME ? process.env.SAW_BLACKLIST_TIME as unknown as number : 600; // ms
+    private static SHUTDOWN_KILL_TIMEOUT = process.env.SAW_SHUTDOWN_KILL_TIMEOUT ? Number.parseInt(process.env.SAW_SHUTDOWN_KILL_TIMEOUT, 10) : 5000; // ms
+    private static SESSION_INACTIVITY_THRESHOLD = process.env.SAW_SESSION_INACTIVITY_THRESHOLD ? Number.parseInt(process.env.SAW_SESSION_INACTIVITY_THRESHOLD, 10) : 15000; // ms
+    private static CASHOUT_INTERVAL = process.env.SAW_CASHOUT_INTERVAL ? Number.parseInt(process.env.SAW_CASHOUT_INTERVAL, 10) : 30000; // 3600; // ms
+    private static CASHOUT_THRESHOLD = process.env.SAW_CASHOUT_THRESHOLD ? Number.parseInt(process.env.SAW_CASHOUT_THRESHOLD, 10) : 1; // 20; // min. num. of POP's for cashout to happen
+    private static BLACKLIST_TIME = process.env.SAW_BLACKLIST_TIME ? Number.parseInt(process.env.SAW_BLACKLIST_TIME, 10) : 600; // ms
     private static CONTRACT_NETWORK = process.env.SAW_CONTRACT_NETWORK ? process.env.SAW_CONTRACT_NETWORK : (process.env.SAW_DEBUG ? "ropsten" : "mainnet"); // Ethereum Network. Default: ROPSTEN in debug mode, MAINNET in production
     private static CONTRACT_INFURA_TOKEN = process.env.SAW_CONTRACT_INFURA_TOKEN; // Access Token for Infura / No default
     private static CONTRACT_WALLET_PRIVATEKEY = process.env.SAW_CONTRACT_WALLET_PRIVATEKEY; // Master Wallet Private Key / No default
@@ -38,9 +38,9 @@ export class SawService {
 
     // Admission Policy
     private static ALLOW_OFFLINE_OPERATION = process.env.SAW_ALLOW_OFFLINE_OPERATION; // Run without connection to Smart Contract (NOT RECOMMENDED!). "CASHOUT" = Allow running when unable to cashout, "ALL" = Allow operation without any connection (not even balance check)
-    private static MAX_POP_INTERVAL = process.env.SAW_MAX_POP_INTERVAL ? process.env.SAW_MAX_POP_INTERVAL as unknown as number : 10000; // ms
-    private static POP_TOLERANCE = process.env.SAW_POP_TOLERANCE ? process.env.SAW_POP_TOLERANCE as unknown as number : 200; // ms
-    private static MIN_INITIAL_FUNDS = process.env.SAW_MIN_INITIAL_FUNDS ? process.env.SAW_MIN_INITIAL_FUNDS as unknown as number : 10000; // gwei
+    private static MAX_POP_INTERVAL = process.env.SAW_MAX_POP_INTERVAL ? Number.parseInt(process.env.SAW_MAX_POP_INTERVAL, 10) : 10000; // ms
+    private static POP_TOLERANCE = process.env.SAW_POP_TOLERANCE ? Number.parseInt(process.env.SAW_POP_TOLERANCE, 10) : 200; // ms
+    private static MIN_INITIAL_FUNDS = process.env.SAW_MIN_INITIAL_FUNDS ? Number.parseInt(process.env.SAW_MIN_INITIAL_FUNDS, 10) : 10000; // gwei
     // tslint:enable: max-line-length
 
     // Smart Contract
@@ -156,9 +156,10 @@ export class SawService {
 
     public async authUser(call: ServerUnaryCall<UserAuthRequest>, callback: sendUnaryData<UserAuthResponse>) {
         tracing.log("SILLY", "SawService.authUser called.");
-        const user = call.request.getUser();
-        const pw = call.request.getPassword();
-        const mac = call.request.getMacaddress();
+        // Normalize User Data
+        const user = call.request.getUser().toLowerCase();
+        const pw = call.request.getPassword().toLowerCase();
+        const mac = call.request.getMacaddress().replace(/-/g, ":");
         // tslint:disable-next-line: max-line-length
         tracing.log("DEBUG", `Received Auth request from User "${user}" with password "${pw}" and MAC address "${mac}"`);
         const response = new UserAuthResponse();
@@ -215,8 +216,8 @@ export class SawService {
 
     public newSession(call: ServerUnaryCall<SessionIdRequest>, callback: sendUnaryData<SessionIdResponse>) {
         tracing.log("SILLY", "SawService.newSession called.");
-        const ethAddr = call.request.getEthAddress();
-        const signature = call.request.getSignature();
+        const ethAddr = call.request.getEthAddress().toLowerCase();
+        const signature = call.request.getSignature().toLowerCase();
         const response = new SessionIdResponse();
         const responseStatus = new PopStatus();
         tracing.log("DEBUG", `Session ID Request received from: ${ethAddr}`);
@@ -320,7 +321,7 @@ export class SawService {
         tracing.log("SILLY", "SawService.recoverSignerAddress called.");
 
         try {
-            return recoverSignerAddress(message, signature, size);
+            return recoverSignerAddress(message, signature, size).toLowerCase();
         } catch (error) {
             tracing.log("DEBUG", "Signature Verification Failed: Malformed message", error);
             return "";
