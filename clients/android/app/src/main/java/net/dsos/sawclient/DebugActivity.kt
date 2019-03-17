@@ -18,9 +18,10 @@ class DebugActivity() : AppCompatActivity() {
     }
 
     public fun newSession(view: View) {
+        sawGrpcClient.newSession()
     }
 
     public fun sendPop(view: View) {
-
+        sawGrpcClient.sendPop()
     }
 }
