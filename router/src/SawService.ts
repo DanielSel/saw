@@ -26,8 +26,9 @@ export class SawService {
     private static LOG_LEVEL = process.env.SAW_LOG_LEVEL ? process.env.SAW_LOG_LEVEL : "INFO";
     private static SHUTDOWN_KILL_TIMEOUT = process.env.SAW_SHUTDOWN_KILL_TIMEOUT ? Number.parseInt(process.env.SAW_SHUTDOWN_KILL_TIMEOUT, 10) : 5000; // ms
     private static SESSION_INACTIVITY_THRESHOLD = process.env.SAW_SESSION_INACTIVITY_THRESHOLD ? Number.parseInt(process.env.SAW_SESSION_INACTIVITY_THRESHOLD, 10) : 15000; // ms
-    private static CASHOUT_INTERVAL = process.env.SAW_CASHOUT_INTERVAL ? Number.parseInt(process.env.SAW_CASHOUT_INTERVAL, 10) : 30000; // 3600; // ms
-    private static CASHOUT_THRESHOLD = process.env.SAW_CASHOUT_THRESHOLD ? Number.parseInt(process.env.SAW_CASHOUT_THRESHOLD, 10) : 1; // 20; // min. num. of POP's for cashout to happen
+    private static CASHOUT_INTERVAL = process.env.SAW_CASHOUT_INTERVAL ? Number.parseInt(process.env.SAW_CASHOUT_INTERVAL, 10) : 30000; // 3600000; // ms
+    private static CASHOUT_THRESHOLD = process.env.SAW_CASHOUT_THRESHOLD ? Number.parseInt(process.env.SAW_CASHOUT_THRESHOLD, 10) : 20; // min. num. of POP's for cashout to happen
+    private static CASHOUT_UNPROCESSABLE_THRESHOLD = process.env.SAW_CASHOUT_UNPROCESSABLE_THRESHOLD ? Number.parseInt(process.env.SAW_CASHOUT_UNPROCESSABLE_THRESHOLD, 10) : 3; // Max. Num. of Attempts to Cashout a Session before marking it unprocessable
     private static BLACKLIST_TIME = process.env.SAW_BLACKLIST_TIME ? Number.parseInt(process.env.SAW_BLACKLIST_TIME, 10) : 600; // ms
     private static CONTRACT_NETWORK = process.env.SAW_CONTRACT_NETWORK ? process.env.SAW_CONTRACT_NETWORK : (process.env.SAW_DEBUG ? "ropsten" : "mainnet"); // Ethereum Network. Default: ROPSTEN in debug mode, MAINNET in production
     private static CONTRACT_INFURA_TOKEN = process.env.SAW_CONTRACT_INFURA_TOKEN; // Access Token for Infura / No default
@@ -95,7 +96,11 @@ export class SawService {
         }
 
         // Session Manager
-        this.sessionManager = new SessionManager(SawService.SESSION_INACTIVITY_THRESHOLD, SawService.DEBUG);
+        this.sessionManager = new SessionManager(
+            SawService.SESSION_INACTIVITY_THRESHOLD,
+            SawService.CASHOUT_UNPROCESSABLE_THRESHOLD,
+            SawService.DEBUG,
+        );
 
         // AUTH Service
         this.grpcAuthService = new Server();

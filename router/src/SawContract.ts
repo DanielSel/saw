@@ -12,7 +12,7 @@ export class SawContract {
     public readonly canCashout: boolean;
     private contract: Contract | undefined;
 
-    private activeCasbout: boolean = false;
+    private activeCashout: boolean = false;
 
     constructor(network: string, infuraToken: string,
                 contractJsonPath: string, contractAddress?: string,
@@ -86,15 +86,15 @@ export class SawContract {
         tracing.log("SILLY", "SawContract.cashoutPops called.");
 
         // Block overlapping cashouts
-        if (this.activeCasbout) {
-            tracing.log("WARN", "Attempted to Cashout during an active cashout. Maybe increase CASHOUT_INTERVAL?");
+        if (this.activeCashout) {
+            tracing.log("WARNING", "Attempted to Cashout during an active cashout. Maybe increase CASHOUT_INTERVAL?");
             return;
         }
-        this.activeCasbout = true;
+        this.activeCashout = true;
 
         if (!this.canCashout) {
             tracing.log("VERBOSE", "Attempted Cashout denied (cashout functionality is currently disabled).");
-            this.activeCasbout = false;
+            this.activeCashout = false;
             return;
         }
 
@@ -102,7 +102,7 @@ export class SawContract {
         const finishedSessions = getFinishedSessions();
         if (finishedSessions.size === 0) {
             tracing.log("VERBOSE", "No finished sessions (nothing to cashout).");
-            this.activeCasbout = false;
+            this.activeCashout = false;
             return;
         }
 
@@ -113,40 +113,53 @@ export class SawContract {
 
         const balanceAfter = await this.contract!.getOwnBalance();
         tracing.log("VERBOSE", `Balance after Cashout: ${balanceAfter}`);
-        this.activeCasbout = false;
+        this.activeCashout = false;
     }
 
     private async cashoutPopsSingle(finishedSessions: Map<number, IFinishedSession>) {
         tracing.log("SILLY", "SawContract.cashoutPopsSingle called.");
 
+        const sessionsToProcess = Array.from(finishedSessions);
         let txCount = await (this.contract!.signer as Wallet).getTransactionCount();
-        await finishedSessions.forEach(async (pop, sessionId, finishedSessionMap) => {
+        await Promise.all(sessionsToProcess.map(async ([sessionId, pop]) => {
             try {
+                tracing.log("VERBOSE", `Attempting to cash out POP
+                     with Session ID: ${sessionId} and Accumulated Time: ${pop.accTime}`);
                 const signature = splitSignature(pop.signature);
                 const tx = await this.contract!.payoutSinglePop(sessionId, pop.accTime,
                     signature.v, signature.r, signature.s,
                     {gasLimit: 4600000, nonce: ++txCount}) as ContractTransaction;
+                tracing.log("VERBOSE", `Submitted transaction to Blockchain for POP
+                    with Session ID: ${sessionId} and Accumulated Time: ${pop.accTime}
+                     (Tx Hash: ${tx.hash})`);
+                // TODO: Timeout
                 const tr = await tx.wait();
+                tracing.log("VERBOSE", `Received Receipt from Blockchain for POP
+                    with Session ID: ${sessionId} and Accumulated Time: ${pop.accTime}
+                     (Tx Hash: ${tx.hash}) (Block Hash: ${tr.blockHash})`);
                 if (tr.status) {
-                    finishedSessionMap.delete(sessionId);
+                    finishedSessions.delete(sessionId);
                     tracing.log("VERBOSE", `Successfully cashed out POP
                      with Session ID: ${sessionId} and Accumulated Time: ${pop.accTime}`);
                 } else {
+                    finishedSessions.get(sessionId)!.numProcessingAttempts++;
                     tracing.log("ERROR", `Failed to cashout POP: Smart Contract Execution unsuccessful.
                      (sessionId=${sessionId}, accTime=${pop.accTime}, signature=${pop.signature})`);
                 }
-        } catch (error) {
+            } catch (error) {
+                finishedSessions.get(sessionId)!.numProcessingAttempts++;
                 tracing.log("ERROR", `Failed to submit cashout request to Smart Contract for POP
                  (sessionId=${sessionId}, accTime=${pop.accTime}, signature=${pop.signature})`,
                 error);
             }
-        });
-
+        }));
     }
 
     private async cashoutPopsList(finishedSessions: Map<number, IFinishedSession>) {
         tracing.log("SILLY", "SawContract.cashoutPopsList called.");
         // TODO
+        // But evaluate first if there is ever any case where this is cheaper
+        // (Unlikely, especially if you add the risk of an invalid POP fucking up the whole tx)
     }
 
     private loadContractInfo(contractJsonPath: string, contractAddress?: string)

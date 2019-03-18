@@ -17,22 +17,24 @@ export interface ISession  {
 export interface IFinishedSession {
     accTime: number;
     signature: string;
+    numProcessingAttempts: number;
 }
 
 export class SessionManager {
     // Configuration
     private sessionInactivityThreshold: number;
+    private cashoutUnprocessableThreshold: number;
     private debugMode?: string;
 
     // Map of Ethereum Address to Session
-    // TODO: Enforce stuff (mac address format, etc.)?
     private sessions: Map<string, ISession>;
     private finishedSessions: Map<number, IFinishedSession>;
     private wifiIfaces?: string[];
 
-    constructor(sessionInactivityThreshold: number, debugMode?: string) {
+    constructor(sessionInactivityThreshold: number, cashoutUnprocessableThreshold: number, debugMode?: string) {
         tracing.log("SILLY", "SessionManager.constructor called.");
         this.sessionInactivityThreshold = sessionInactivityThreshold;
+        this.cashoutUnprocessableThreshold = cashoutUnprocessableThreshold;
         this.debugMode = debugMode;
 
         this.sessions = new Map<string, ISession>();
@@ -90,6 +92,7 @@ export class SessionManager {
     public flushSessions(inactiveOnly: boolean) {
         tracing.log("SILLY", "SessionManager.flushSessions called.");
         this.sessions.forEach((session, ethAddr, sessionsMap) => {
+            // Only Cashout "Inactive" Sessions. Preparation for RESUME Session feature.
             if (!inactiveOnly ||
                 (inactiveOnly && !session.active
                     && session.lastPopTime < Date.now() + this.sessionInactivityThreshold)) {
@@ -97,8 +100,9 @@ export class SessionManager {
                 // Check if there is a point in cashing out the session
                 if (typeof(session.sessionId) === "number" && session.accTime > 0) {
 
-                    this.finishedSessions.set(session.sessionId as number, {
+                    this.finishedSessions.set(session.sessionId, {
                         accTime: session.accTime,
+                        numProcessingAttempts: 0,
                         signature: session.lastValidPopSignature as string,
                     });
                 }
@@ -134,6 +138,8 @@ export class SessionManager {
     private saveCashoutStore() {
         tracing.log("SILLY", "SessionManager.saveCashoutStore called.");
         // TODO
+        // Note: Write Unprocessable Sessions into separate file
+        // Unprocessable: session.numAttemptedCashouts >= cashoutUnprocessableThreshold
     }
 
     private saveActiveSessions() {
