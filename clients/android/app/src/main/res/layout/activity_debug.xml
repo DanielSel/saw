@@ -21,6 +21,30 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
+            android:id="@+id/debug_btn_start_pop_svc"
+            android:layout_width="114dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="84dp"
+            android:layout_weight="1"
+            android:onClick="startPopSvc"
+            android:text="startPopSvc"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+    <Button
+            android:id="@+id/debug_btn_stop_pop_svc"
+            android:layout_width="114dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="156dp"
+            android:layout_marginTop="84dp"
+            android:layout_weight="1"
+            android:onClick="stopPopSvc"
+            android:text="stopPopSvc"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+    <Button
         android:id="@+id/debug_btn_send_pop"
         android:layout_width="100dp"
         android:layout_height="wrap_content"

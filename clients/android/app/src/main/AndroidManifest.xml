@@ -21,8 +21,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".PopService" />
-        <activity android:name=".DebugActivity" android:enabled="@bool/DEBUG" />
+        <activity android:name=".DebugActivity" android:enabled="@bool/DEBUG"/>
+        <service android:name=".PopService" android:enabled="true"/>
     </application>
 
 </manifest>
