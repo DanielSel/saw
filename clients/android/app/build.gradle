@@ -12,11 +12,11 @@ android {
             storePassword 'dsosdev'
         }
     }
-    compileSdkVersion 28
+    compileSdkVersion 26
     defaultConfig {
         applicationId "net.dsos.sawclient"
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 26
         multiDexEnabled true
         versionCode 1
         versionName "1.0"
@@ -64,7 +64,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'javax.annotation:javax.annotation-api:1.2'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation "com.github.walleth.kethereum:bip39:$kethereumVersion"
     implementation "com.github.walleth.kethereum:bip44:$kethereumVersion"
