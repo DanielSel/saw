@@ -1,89 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              tools:context=".MainActivity" android:id="@+id/main_layout">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/linearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin">
-
-        <ProgressBar
-            android:id="@+id/pop_progress"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:visibility="gone" />
-
+    <LinearLayout
+            android:id="@+id/logo_layout"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:background="#D32F2F"
+            android:gravity="bottom"
+            android:orientation="vertical">
+        <ImageView
+                android:id="@+id/logo_racoon_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/racoonhair"
+                android:scaleType="center"
+                android:layout_gravity="center_horizontal"/>
         <TextView
-            android:id="@+id/text_status"
+                android:id="@+id/logo_racoon_text"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:padding="8dp"
+                android:gravity="center_horizontal"
+                android:text="RACOON"
+                android:textSize="40sp"
+                android:textStyle="italic"
+                android:textColor="#FFFFFF"
+                android:translationY="-10.0dp"
+                android:scaleY="0.9"/>
+    </LinearLayout>
+    <LinearLayout
+            android:id="@+id/status_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/text_status_idle" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/label_ssid"
+            android:layout_height="100dp"
+            android:background="#D32F2F"
+            android:gravity="bottom"
+            android:orientation="vertical"
+            android:weightSum="1"
+            android:layout_weight="1">
+        <ImageView
+                android:id="@+id/status_circle_img"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/label_ssid" />
-
-            <TextView
-                android:id="@+id/text_ssid"
+                android:src="@drawable/animationstest2"
+                android:scaleType="center"
+                android:translationY="-15.0dp"
+                android:scaleX="1.5"
+                android:scaleY="1.5"
+                android:layout_gravity="center_horizontal"/>
+        <TextView
+                android:id="@+id/status_separator_line"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="3dp"
+                android:gravity="center_horizontal"
+                android:text="____________________________________________________"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center_horizontal"/>
+        <TextView
+                android:id="@+id/status_text"
+                android:layout_width="match_parent"
+                android:layout_height="115dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginBottom="8dp"
+                android:paddingLeft="10dp"
+                android:paddingTop="1dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="1dp"
+                android:gravity="bottom"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center_horizontal"/>
+        <TextView
+                android:id="@+id/btn_dots"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:gravity="center_horizontal"
+                android:text=". . . "
+                android:textSize="30sp"
+                android:textColor="#FFFFFF"/>
+        <Button
+                android:id="@+id/main_btn_debugview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/label_bssid"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/label_bssid" />
-
-            <TextView
-                android:id="@+id/text_bssid"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-        </LinearLayout>
-
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginBottom="16dp"
+                android:enabled="@bool/DEBUG"
+                android:onClick="openDebugView"
+                android:text="DebugView"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/main_btn_debugview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginBottom="16dp"
-        android:enabled="@bool/DEBUG"
-        android:onClick="openDebugView"
-        android:text="DebugView"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-</android.support.constraint.ConstraintLayout>
+
+</LinearLayout>
