@@ -12,7 +12,7 @@ import {SawPopService} from "./grpc/saw_pop_grpc_pb";
 import {Pop, PopStatus, PopStatusCode, SessionIdRequest, SessionIdResponse} from "./grpc/saw_pop_pb";
 
 import {SawContract} from "./SawContract";
-import {IFinishedSession, SessionManager} from "./SessionManager";
+import {SessionManager} from "./SessionManager";
 
 import {recoverSignerAddress} from "./utils/crypto";
 import {tracing} from "./utils/tracing";
@@ -161,9 +161,8 @@ export class SawService {
 
     public async authUser(call: ServerUnaryCall<UserAuthRequest>, callback: sendUnaryData<UserAuthResponse>) {
         tracing.log("SILLY", "SawService.authUser called.");
-        // Normalize User Data
         const user = call.request.getUser().toLowerCase();
-        const pw = call.request.getPassword().toLowerCase();
+        const pw = call.request.getPassword();
         const mac = call.request.getMacaddress().replace(/-/g, ":");
         // tslint:disable-next-line: max-line-length
         tracing.log("DEBUG", `Received Auth request from User "${user}" with password "${pw}" and MAC address "${mac}"`);
@@ -222,12 +221,12 @@ export class SawService {
     public newSession(call: ServerUnaryCall<SessionIdRequest>, callback: sendUnaryData<SessionIdResponse>) {
         tracing.log("SILLY", "SawService.newSession called.");
         const ethAddr = call.request.getEthAddress().toLowerCase();
-        const signature = call.request.getSignature().toLowerCase();
+        const signature = call.request.getSignature();
         const response = new SessionIdResponse();
         const responseStatus = new PopStatus();
         tracing.log("DEBUG", `Session ID Request received from: ${ethAddr}`);
 
-        if (!(this.recoverSignerAddress(ethAddr, signature) === ethAddr)) {
+        if (!(this.recoverSignerAddress(ethAddr, signature).toLowerCase() === ethAddr)) {
             responseStatus.setState(PopStatusCode.POP_INVALID);
             responseStatus.setMsg("Invalid Signature on Session ID Request");
             tracing.log("DEBUG", `Invalid Signature on Session ID Request from: ${ethAddr}`);
@@ -263,7 +262,7 @@ export class SawService {
         const sessionId = call.request.getSessionhash();
         const accTime = call.request.getAccTime();
         const signature = call.request.getSignature();
-        const ethAddr = this.recoverSignerAddress(sessionId + accTime, signature, 16);
+        const ethAddr = this.recoverSignerAddress(sessionId + accTime, signature, 16).toLowerCase();
         tracing.log("DEBUG", `POP received. ETH address: ${ethAddr}`);
 
         const response = new PopStatus();
