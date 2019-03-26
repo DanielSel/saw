@@ -50,7 +50,6 @@ class PopService : Service() {
     }
 
     private fun startForegroundService() {
-        Log.d(TAG_POP_SERVICE, "Start foreground service.");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val pendingIntent: PendingIntent =
                 Intent(this, MainActivity::class.java).let { notificationIntent ->
@@ -83,17 +82,17 @@ class PopService : Service() {
     }
 
     private fun stopForegroundService() {
-        Log.d(TAG_POP_SERVICE, "Stop foreground service.")
         stopForeground(true)
         stopSelf()
     }
 
     private fun startPopCycle() {
-        //sawClient.newSession()
+        sawClient.newSession()
+
 
         timer = Timer("pop_cycle", true)
         timer!!.schedule(10000, 10000) {
-            sawClient.test()
+            sawClient.sendPop()
         }
     }
 
