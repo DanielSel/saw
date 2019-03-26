@@ -20,7 +20,8 @@ class SawGrpcClient(mnemonic: String = DEFAULT_MNEMONIC) {
 
     private var sessionId: Long? = null
     private var prevPopTime: Long? = null
-    private var accTime: Long? = null
+    var accTime: Long? = null
+        private set
 
     init {
 
