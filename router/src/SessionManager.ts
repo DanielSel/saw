@@ -71,7 +71,13 @@ export class SessionManager {
         tracing.log("SILLY", "SawService.removeEmptyClientSession called.");
         tracing.log("INFO", `Removing client with ETH address ${clientEthAddress}.
             Reason: Empty Session, No POP Received`);
-        const macAddr = this.sessions.get(clientEthAddress)!.macAddr;
+        const session = this.sessions.get(clientEthAddress);
+        if (!session) {
+            tracing.log("WARNING", `Attempted to remove supposedly empty session for client with
+             ETH address ${clientEthAddress} but it does not exist.`);
+            return;
+        }
+        const macAddr = session.macAddr;
         this.sessions.delete(clientEthAddress);
         this.disassociateClient(clientEthAddress, macAddr);
     }
@@ -80,7 +86,12 @@ export class SessionManager {
         tracing.log("SILLY", "SawService.processFinishedSession called.");
         const reason = extraTimeUpdate ? "Accumulated Time too low" : "POP Timeout";
         tracing.log("INFO", `Processing session of client with ETH address ${clientEthAddress}. Reason: ${reason}`);
-        const session = this.sessions.get(clientEthAddress)!;
+        const session = this.sessions.get(clientEthAddress);
+        if (!session) {
+            tracing.log("WARNING", `Attempted to process finished session for client with
+             ETH address ${clientEthAddress} but it does not exist.`);
+            return;
+        }
         session.active = false;
         if (extraTimeUpdate) {
             session.accTime = extraTimeUpdate.accTime;
