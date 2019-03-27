@@ -1,0 +1,47 @@
+name: $(Date:yyyyMMdd)
+trigger:
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - clients/android/*
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - clients/android/*
+
+variables:
+- group: env-dev
+- group: dsos-keys-android-signing
+
+pool:
+  vmImage: ubuntu-16.04
+
+steps:
+- task: Gradle@2
+  displayName: Build Release apk
+  inputs:
+    workingDirectory: $(Build.SourcesDirectory)/clients/android
+    gradleWrapperFile: $(Build.SourcesDirectory)/clients/android/gradlew
+    gradleOptions: '-Xmx3072m'
+    tasks: 'assembleRelease'
+- task: AndroidSigning@2
+  displayName: Sign Release apk with DEV Key
+  inputs:
+    apkFiles: "$(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/*.apk"
+    jarsign: true
+    jarsignerKeystoreFile: dsos-android-dev.jks
+    jarsignerKeystorePassword: $(JKS_PW)
+    jarsignerKeystoreAlias: $(KEY_ALIAS)
+    jarsignerKeyPassword: $(KEY_PW)
+    zipalign: true
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish artifact for release pipeline'
+  inputs:
+    artifactName: racoon-release
+    targetPath: "$(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/*.apk"

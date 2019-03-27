@@ -4,14 +4,6 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.google.protobuf'
 
 android {
-    signingConfigs {
-        dsos_android_dev {
-            keyAlias 'dsos-android-dev'
-            keyPassword 'dsosdev'
-            storeFile file('C:/Users/Daniel/Documents/Keys/dsos-android-dev.jks')
-            storePassword 'dsosdev'
-        }
-    }
     compileSdkVersion 26
     defaultConfig {
         applicationId "net.dsos.sawclient"
@@ -27,7 +19,6 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             resValue "bool", "DEBUG", "false"
-            signingConfig signingConfigs.dsos_android_dev
         }
         debug {
             debuggable true
@@ -75,6 +66,6 @@ dependencies {
     implementation "io.grpc:grpc-stub:$grpcVersion"
     implementation "io.grpc:protoc-gen-grpc-java:$grpcVersion"
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 }
