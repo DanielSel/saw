@@ -1,0 +1,38 @@
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/animation_popcycle" android:oneshot="false">
+    <item android:drawable="@drawable/anigrun01" android:duration="1000" />
+    <item android:drawable="@drawable/anigrun02" android:duration="100" />
+    <item android:drawable="@drawable/anigrun03" android:duration="100" />
+    <item android:drawable="@drawable/anigrun04" android:duration="100" />
+    <item android:drawable="@drawable/anigrun05" android:duration="100" />
+    <item android:drawable="@drawable/anigrun06" android:duration="100" />
+    <item android:drawable="@drawable/anigrun07" android:duration="100" />
+    <item android:drawable="@drawable/anigrun08" android:duration="100" />
+    <item android:drawable="@drawable/anigrun09" android:duration="100" />
+    <item android:drawable="@drawable/anigrun10" android:duration="100" />
+    <item android:drawable="@drawable/anigrun11" android:duration="100" />
+    <item android:drawable="@drawable/anigrun12" android:duration="100" />
+    <item android:drawable="@drawable/anigrun13" android:duration="100" />
+    <item android:drawable="@drawable/anigrun14" android:duration="100" />
+    <item android:drawable="@drawable/anigrun15" android:duration="100" />
+    <item android:drawable="@drawable/anigrun16" android:duration="100" />
+    <item android:drawable="@drawable/anigrun17" android:duration="100" />
+    <item android:drawable="@drawable/anigrun18" android:duration="100" />
+    <item android:drawable="@drawable/anigrun17" android:duration="100" />
+    <item android:drawable="@drawable/anigrun16" android:duration="100" />
+    <item android:drawable="@drawable/anigrun15" android:duration="100" />
+    <item android:drawable="@drawable/anigrun14" android:duration="100" />
+    <item android:drawable="@drawable/anigrun13" android:duration="100" />
+    <item android:drawable="@drawable/anigrun12" android:duration="100" />
+    <item android:drawable="@drawable/anigrun11" android:duration="100" />
+    <item android:drawable="@drawable/anigrun10" android:duration="100" />
+    <item android:drawable="@drawable/anigrun09" android:duration="100" />
+    <item android:drawable="@drawable/anigrun08" android:duration="100" />
+    <item android:drawable="@drawable/anigrun07" android:duration="100" />
+    <item android:drawable="@drawable/anigrun06" android:duration="100" />
+    <item android:drawable="@drawable/anigrun05" android:duration="100" />
+    <item android:drawable="@drawable/anigrun04" android:duration="100" />
+    <item android:drawable="@drawable/anigrun03" android:duration="100" />
+    <item android:drawable="@drawable/anigrun02" android:duration="100" />
+ </animation-list>
+ 
