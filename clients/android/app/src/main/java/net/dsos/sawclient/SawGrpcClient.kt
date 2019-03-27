@@ -29,6 +29,7 @@ class SawGrpcClient(mnemonic: String = DEFAULT_MNEMONIC) {
             .forAddress("172.16.0.1", 6666)
             .usePlaintext(true)
             .build())
+            .withWaitForReady()
 
         val mnemonicWords = dirtyPhraseToMnemonicWords(mnemonic)
         accountEKey = mnemonicWords.toKey("m/44'/60'/0'/0/0");
