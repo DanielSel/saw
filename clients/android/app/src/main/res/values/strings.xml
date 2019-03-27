@@ -13,8 +13,8 @@
     <string name="label_bssid">BSSID:</string>
     <!-- POP Service Notification -->
     <string name="pop_notification_channel_name">POP Service</string>
-    <string name="pop_notification_title">SAW</string>
-    <string name="pop_notification_message">Sending Proof of Presence</string>
-    <string name="pop_notification_ticker_text">Smart Autonomous Wifi is sending Proof of Presence to Router</string>
+    <string name="pop_notification_title">RACOON</string>
+    <string name="pop_notification_message">Keeping you connected…</string>
+    <string name="pop_notification_ticker_text">RACOON is sending Presence Proofs to SAW Router</string>
 
 </resources>

@@ -68,11 +68,11 @@ class PopService : Service() {
             val notification: Notification = Notification.Builder(this, CHANNEL_ID)
                 .setContentTitle(getText(R.string.pop_notification_title))
                 .setContentText(getText(R.string.pop_notification_message))
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.app_icon)
                 .setLargeIcon(
                     BitmapFactory.decodeResource(
                         resources,
-                        R.mipmap.ic_launcher))
+                        R.drawable.app_icon))
                 .setContentIntent(pendingIntent)
                 .setTicker(getText(R.string.pop_notification_ticker_text))
                 .build()

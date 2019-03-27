@@ -47,7 +47,7 @@
                 android:id="@+id/status_circle_img"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/animationstest2"
+                android:src="@drawable/animation_popcycle"
                 android:scaleType="center"
                 android:translationY="-15.0dp"
                 android:scaleX="1.5"
@@ -104,6 +104,5 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>
     </LinearLayout>
-
 
 </LinearLayout>

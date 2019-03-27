@@ -22,12 +22,14 @@ abstract class WifiChangeReceiver : BroadcastReceiver() {
                     context!!.startService(startIntent)
                     addStatusLogEntry("SAW Network detected!")
                     addStatusLogEntry("RACOON is getting to work...")
+                    setStatusAnimation(true)
                 } else {
                     val stopIntent = Intent(context, PopService::class.java)
                     stopIntent.action = PopService.ACTION_STOP_FOREGROUND_SERVICE
                     context!!.startService(stopIntent)
                     addStatusLogEntry("Disconnected from SAW Network!")
                     addStatusLogEntry("RACOON is resting...")
+                    setStatusAnimation(false)
                 }
             }
         } else if (intent?.action == WifiManager.WIFI_STATE_CHANGED_ACTION) {
@@ -41,4 +43,5 @@ abstract class WifiChangeReceiver : BroadcastReceiver() {
     }
 
     protected abstract fun addStatusLogEntry(text: String?)
+    protected abstract fun setStatusAnimation(running: Boolean)
 }
