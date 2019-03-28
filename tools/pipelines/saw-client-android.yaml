@@ -33,15 +33,15 @@ steps:
 - task: AndroidSigning@2
   displayName: Sign Release apk with DEV Key
   inputs:
-    apkFiles: "$(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/*.apk"
+    apkFiles: "$(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/app-release.apk"
     jarsign: true
     jarsignerKeystoreFile: dsos-android-dev.jks
     jarsignerKeystorePassword: $(JKS_PW)
     jarsignerKeystoreAlias: $(KEY_ALIAS)
     jarsignerKeyPassword: $(KEY_PW)
-    zipalign: true
+    zipalign: false
 - task: PublishPipelineArtifact@0
   displayName: 'Publish artifact for release pipeline'
   inputs:
     artifactName: racoon-release
-    targetPath: "$(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/*.apk"
+    targetPath: "app-release.apk"
