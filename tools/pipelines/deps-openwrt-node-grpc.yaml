@@ -34,3 +34,4 @@ steps:
 - template: templates/publish-opkg-bintray.yaml
   parameters:
     pkgName: node-grpc
+    pkgDir: '$(Build.StagingDirectory)/custom'
