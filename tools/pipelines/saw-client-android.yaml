@@ -51,3 +51,7 @@ steps:
     serverEndpoint: ds-appcenter
     appSlug: "daniel.sel/racoon"
     appFile: $(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/app-release-unsigned.apk
+    destinationType: groups
+    distributionGroupId: public
+    releaseNotesOption: input
+    releaseNotesInput: "CI Release from Build #$(Date:yyyyMMdd)"
