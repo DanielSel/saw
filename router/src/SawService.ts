@@ -185,6 +185,15 @@ export class SawService {
             return;
         }
 
+        // Check active Session
+        if (!!this.sessionManager.getSession(user)) {
+            tracing.log("INFO", `Duplicate Auth Request from User "${user}" with MAC address "${mac}"`);
+            response.setState(AuthStatusCode.AUTH_OK);
+            response.setMsg("Careful, you already had a pre-session...");
+            callback(null, response);
+            return;
+        }
+
         // Check Balance (if we can do balance checks)
         if (this.sawContract.canBalance) {
             const balance = await this.sawContract.getBalance(user);
@@ -234,6 +243,10 @@ export class SawService {
             responseStatus.setState(PopStatusCode.POP_CONNECTION_ERROR);
             responseStatus.setMsg(`No pre-session for ETH Address: ${ethAddr}. Authenticate using RADIUS first.`);
             tracing.log("DEBUG", `No pre-session for Session ID Request from: ${ethAddr}`);
+        } else if (this.sessionManager.getSession(ethAddr)!.active) {
+            tracing.log("INFO", `Duplicate Session Request from User "${ethAddr}`);
+            responseStatus.setState(PopStatusCode.POP_OK);
+            responseStatus.setMsg("Careful, you already have an active session...");
         } else {
             const session = this.sessionManager.getSession(ethAddr)!;
             clearTimeout(session.currentTimer);

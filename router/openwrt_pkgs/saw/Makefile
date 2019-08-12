@@ -11,7 +11,7 @@ define Package/saw
 	CATEGORY:=Utilities
 	TITLE:=Smart Autonomous Wifi
 	URL:=https://github.com/DanielSel/saw
-	DEPENDS:=+node +node-grpc \
+	DEPENDS:=+node +node-npm +node-grpc \
 		+freeradius3 +freeradius3-mod-exec +freeradius3-mod-eap-ttls \
 		+freeradius3-democerts \
 		+hostapd-utils
