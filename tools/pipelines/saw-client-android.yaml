@@ -52,6 +52,6 @@ steps:
     appSlug: "daniel.sel/racoon"
     appFile: $(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/app-release-unsigned.apk
     destinationType: groups
-    distributionGroupId: public
+    distributionGroupId: c06690f7-796d-4103-a588-3c2e0fe1b761
     releaseNotesOption: input
     releaseNotesInput: "CI Release from Build #$(Date:yyyyMMdd)"
