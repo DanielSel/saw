@@ -33,7 +33,7 @@ steps:
 - task: AndroidSigning@2
   displayName: Sign Release apk with DEV Key
   inputs:
-    apkFiles: "$(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/app-release.apk"
+    apkFiles: "**/*.apk"
     jarsign: true
     jarsignerKeystoreFile: dsos-android-dev.jks
     jarsignerKeystorePassword: $(JKS_PW)
@@ -44,4 +44,10 @@ steps:
   displayName: 'Publish artifact for release pipeline'
   inputs:
     artifactName: racoon-release
-    targetPath: "app-release.apk"
+    targetPath: $(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/app-release-unsigned.apk
+- task: AppCenterDistribute@3
+  displayName: Publish Racoon App on AppCenter
+  inputs:
+    serverEndpoint: ds-appcenter
+    appSlug: "daniel.sel/racoon"
+    appFile: $(Build.SourcesDirectory)/clients/android/app/build/outputs/apk/release/app-release-unsigned.apk
