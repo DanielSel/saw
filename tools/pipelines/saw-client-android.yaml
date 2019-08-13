@@ -54,4 +54,4 @@ steps:
     destinationType: groups
     distributionGroupId: c06690f7-796d-4103-a588-3c2e0fe1b761
     releaseNotesOption: input
-    releaseNotesInput: "CI Release from Build #$(Date:yyyyMMdd)"
+    releaseNotesInput: "CI Release from Build # $(Build.BuildNumber)"

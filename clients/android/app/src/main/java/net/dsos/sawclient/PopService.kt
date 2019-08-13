@@ -21,6 +21,8 @@ class PopService : Service() {
     private val sawClient: SawGrpcClient
     private var timer: Timer? = null
 
+    private var running: Boolean = false
+
     init {
         sawClient = SawGrpcClient()
     }
@@ -34,12 +36,18 @@ class PopService : Service() {
 
         when (action) {
             ACTION_START_FOREGROUND_SERVICE -> {
-                startForegroundService()
-                startPopCycle()
+                if (!running) {
+                    startForegroundService()
+                    startPopCycle()
+                    running = true;
+                }
             }
             ACTION_STOP_FOREGROUND_SERVICE -> {
-                stopForegroundService()
-                stopPopCycle()
+                if (running) {
+                    stopForegroundService()
+                    stopPopCycle()
+                    running = false;
+                }
             }
         }
         return super.onStartCommand(intent, flags, startId)

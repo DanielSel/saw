@@ -14,6 +14,9 @@ import org.kethereum.keccakshortcut.keccak
 val DEFAULT_MNEMONIC = "bulb ask truly venue battle plunge sad ostrich fan piano battle notable"
 class SawGrpcClient(mnemonic: String = DEFAULT_MNEMONIC) {
 
+    companion object {
+        @JvmStatic var running: Boolean = false
+    }
 
     private val popClient: SawPopBlockingStub
     private val accountEKey: ExtendedKey
