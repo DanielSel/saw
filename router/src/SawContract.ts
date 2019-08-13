@@ -128,7 +128,8 @@ export class SawContract {
                 const signature = splitSignature(pop.signature);
                 const tx = await this.contract!.payoutSinglePop(sessionId, pop.accTime,
                     signature.v, signature.r, signature.s,
-                    {gasLimit: 4600000, nonce: ++txCount}) as ContractTransaction;
+                    // TODO: SUPER IMPORTANT!! Make gas price dependant on mainnet vs ropsten. Or Configurable.
+                    {gasLimit: 4600000, gasPrice: 60000000000, nonce: ++txCount}) as ContractTransaction;
                 tracing.log("VERBOSE", `Submitted transaction to Blockchain for POP
                     with Session ID: ${sessionId} and Accumulated Time: ${pop.accTime}
                      (Tx Hash: ${tx.hash})`);
