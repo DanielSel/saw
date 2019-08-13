@@ -17,3 +17,6 @@
 
 #### Conclusion
 Possible in short-term future but highly unlikely, no serious damage to network, no real incentive
+
+## Edge Cases
+* Stay connected forver --> Never cashout because we only cashout inactive sessions --> force cashout after period
