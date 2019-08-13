@@ -2,9 +2,14 @@
 Things that will be done by me when I can find the time. Or by anyone else, feel free to knock yourself out...
 Kinda sorted by priority.
 
+## General
+* Document Build Process
+* More detailed explanation of Code
+
 ## Racoon (Android App)
 * Configurable Settings
 * Store Wallet info encrypted (Key backed by HWE Module)
+* Either auto-configure SAW Wifi Network or show username + password to user for quick copy & paste
 * Fix Name & Icon
 * Become verified Google Play Store developer
 * Publish App in Play Store (as soon as production-ready)
