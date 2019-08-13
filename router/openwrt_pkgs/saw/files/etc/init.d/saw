@@ -8,7 +8,6 @@ start_service() {
     # Load Configuration
     config_load saw
 
-    config_get contract_infura_token user contract_infura_token
     config_get contract_wallet_mnemonic user contract_wallet_mnemonic
     config_get contract_wallet_privatekey user contract_wallet_privatekey
     config_get contract_network user contract_network
@@ -19,6 +18,7 @@ start_service() {
     config_get shutdown_kill_timeout main shutdown_kill_timeout
     config_get contract_json_path main contract_json_path
     config_get contract_address main contract_address
+    config_get contract_infura_token main contract_infura_token
     config_get cashout_threshold main cashout_threshold
     config_get cashout_interval main cashout_interval
     config_get session_inactivity_threshold main session_inactivity_threshold
@@ -43,7 +43,6 @@ start_service() {
 
     # Required Config
     procd_set_param env \
-    SAW_CONTRACT_INFURA_TOKEN=$contract_infura_token \
     SAW_CONTRACT_WALLET_MNEMONIC="$contract_wallet_mnemonic" \
     SAW_CONTRACT_WALLET_PRIVATEKEY=$contract_wallet_privatekey \
     SAW_CONTRACT_NETWORK=$contract_network \
@@ -53,6 +52,7 @@ start_service() {
     SAW_SHUTDOWN_KILL_TIMEOUT=$shutdown_kill_timeout \
     SAW_CONTRACT_JSON_PATH="$contract_json_path" \
     SAW_CONTRACT_ADDRESS=$contract_address \
+    SAW_CONTRACT_INFURA_TOKEN=$contract_infura_token \
     SAW_CASHOUT_THRESHOLD=$cashout_threshold \
     SAW_CASHOUT_INTERVAL=$cashout_interval \
     SAW_SESSION_INACTIVITY_THRESHOLD=$session_inactivity_threshold \
