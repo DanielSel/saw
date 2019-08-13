@@ -7,10 +7,10 @@ Racoon (Android App): [![Build Status](https://dev.azure.com/danielsel/saw/_apis
 Tools: [![Build Status](https://dev.azure.com/danielsel/saw/_apis/build/status/tools-docker?branchName=develop)](https://dev.azure.com/danielsel/saw/_build/latest?definitionId=4&branchName=develop)
 
 ## User Guide
-See doc/user-guide.md
+See [doc/user-guide.md](doc/user-guide.md)
 
 ## Developer Guide
-See doc/dev-guide.md
+See [doc/dev-guide.md](doc/dev-guide.md)
 
 
 ## Idea
