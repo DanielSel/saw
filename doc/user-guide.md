@@ -1,5 +1,5 @@
 # User Guide
-To try out the PoC (Proof of Concept) for the Autonomous IoT Wifi, you need a OpenWRT 18.06 capable device (as SAW provider) and an Android Phone with Android 6 (Marshmallow) or higher (as SAW client).
+To try out the PoC (Proof of Concept) for the Autonomous IoT Wifi, you need a OpenWRT 18.06 capable device (as SAW provider) and an Android Phone with Android 5.0 (Lollipop) or higher (as SAW client).
 
 This guide is based on a Turris Omnia as router, but it should work similarly on any other OpenWRT device.
 
@@ -60,3 +60,14 @@ The installation process will automatically install all dependencies (including 
 
 ## Usage
 Nice, now we got it all installed and set up, but how to use it?
+
+### Racoon (Android App)
+1. Open the Racoon App and it will probably tell you that you are not connected to `SAW` Network
+2. Connect to the SAW Network. The username is the public key of your Ethereum Wallet and the password is the signature data of the public key (signed by your private key). In the current PoC state, the Wallet is hardcoded into the Android App with the following resulting values:
+    * Username: `0x9C850041C6F6A7430dF01A6c246f60bDa4313571`
+    * Password: `0x4de9a340fe26683a0ba5071355ac952d2ed815238ebbe96a31a9ed7db1eae28b719dd485911d1c692f7479c885e8d0eb41`
+Additionally you will need the following settings:
+    * EAP Method: `TTLS`
+    * Phase 2 Authentication: `PAP`
+    * Don't validate CA certificate
+3. The router should now give you ~ 10s of time to send the first POP message, which (if everything is setup correctly) will be automatically done by the Racoon app periodically until you disconnect from the `SAW` wifi.
